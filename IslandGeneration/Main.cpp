@@ -18,6 +18,8 @@
 float * setPoints;
 int numberofPoints;
 Mode pointMode;
+float voronoiPoints[1000];
+int idx = 0;
 
 // Voronoi Object
 VD vd;
@@ -47,6 +49,23 @@ void init(){
 
 	vd = generateVoronoi(&setPoints, numberofPoints);
 
+	// Fill in points for voronoi edges
+	VD::Face_iterator ft = vd.faces_begin();
+
+	for(;ft != vd.faces_end();ft++){
+		Ccb_halfedge_circulator et_start = (*ft).ccb();
+		Ccb_halfedge_circulator et = et_start;
+		do {
+			if(et->has_source() && et->has_target()){
+				voronoiPoints[idx++] = et->source()->point().x();
+				voronoiPoints[idx++] = et->source()->point().y();
+				voronoiPoints[idx++] = et->target()->point().x();
+				voronoiPoints[idx++] = et->target()->point().y();
+			}
+		} while ( ++et != et_start );
+	}
+
+
 }
 
 void display(){
@@ -60,14 +79,18 @@ void display(){
 	/* Step 2a: Set up the array for the line and draw it */
 
 	glPointSize(5.0);
-	glVertexPointer(2, GL_FLOAT, 0, setPoints);
+	glVertexPointer(2, GL_FLOAT, 0, voronoiPoints);
 	glColor3f(0.0, 0.0, 255.0);
-	glDrawArrays(GL_LINES, 0, numberofPoints);
+	glDrawArrays(GL_LINES, 0, idx / 2);
 
 	glPointSize(5.0);
 	glVertexPointer(2, GL_FLOAT, 0, setPoints);
 	glColor3f(0.0, 255.0, 0.0);
 	glDrawArrays(GL_POINTS, 0, numberofPoints);
+
+
+
+
 	/* Step 3: Disable the clients */
 	glDisableClientState(GL_VERTEX_ARRAY);
 

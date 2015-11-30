@@ -56,6 +56,7 @@ typedef VD::Face_handle               Face_handle;
 typedef VD::Halfedge_handle           Halfedge_handle;
 typedef VD::Ccb_halfedge_circulator   Ccb_halfedge_circulator;
 
+
 // Voronoi functions and definitions
 VD generateVoronoi(float **, int);
 

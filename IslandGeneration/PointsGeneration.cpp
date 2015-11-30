@@ -33,7 +33,7 @@ void generateRandomPoints(float ** setPoints, int numberofPoints){
     	} else{ 
     		(*setPoints)[i] = (rand() % (int) windowWidth) + 1;
         }
-        cout << setPoints[i] << " " ; 
+        //cout << setPoints[i] << " " ;
    	} 
 }
 
