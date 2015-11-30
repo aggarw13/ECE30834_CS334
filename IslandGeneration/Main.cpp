@@ -19,6 +19,9 @@ float * setPoints;
 int numberofPoints;
 Mode pointMode;
 
+// Voronoi Object
+VD vd;
+
 void init(){
 	// White color
 	glClearColor(1.0, 1.0, 1.0, 0.0);
@@ -42,7 +45,7 @@ void init(){
 		default: break;
 	}
 
-	generateVoronoi(&setPoints, numberofPoints);
+	vd = generateVoronoi(&setPoints, numberofPoints);
 
 }
 
@@ -55,10 +58,16 @@ void display(){
 	glEnableClientState(GL_VERTEX_ARRAY);
 
 	/* Step 2a: Set up the array for the line and draw it */
-	glColor3f(0.0, 0.0, 255.0);
+
 	glPointSize(5.0);
 	glVertexPointer(2, GL_FLOAT, 0, setPoints);
+	glColor3f(0.0, 0.0, 255.0);
 	glDrawArrays(GL_LINES, 0, numberofPoints);
+
+	glPointSize(5.0);
+	glVertexPointer(2, GL_FLOAT, 0, setPoints);
+	glColor3f(0.0, 255.0, 0.0);
+	glDrawArrays(GL_POINTS, 0, numberofPoints);
 	/* Step 3: Disable the clients */
 	glDisableClientState(GL_VERTEX_ARRAY);
 
