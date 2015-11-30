@@ -41,7 +41,7 @@ void generateVoronoi(float ** setPoints, int numberofPoints){
 
 	int i = 0;
 	for(i = 0; i < numberofPoints; i+=2){
-		Site_2 p(setPoints[i], setPoints[i + 1]);
+		Site_2 p(Point_2((*setPoints)[i], (*setPoints)[i + 1]));
 		vd.insert(p);
 
 	}
