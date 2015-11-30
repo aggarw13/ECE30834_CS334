@@ -1,0 +1,7 @@
+Main.cpp: In function ‘void init()’:
+Main.cpp:114:42: warning: deprecated conversion from string constant to ‘char*’ [-Wwrite-strings]
+  loadFile("vertex.glsl", vertexShaderCode);
+                                          ^
+Main.cpp:129:46: warning: deprecated conversion from string constant to ‘char*’ [-Wwrite-strings]
+  loadFile("fragment.glsl", fragmentShaderCode);
+                                              ^

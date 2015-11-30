@@ -4,6 +4,8 @@
 
 #define PI 3.14159 
 #define DELTA 6 // angle step difference for spiral
+#define MAX_RADIUS 15
+
 
 /* Window information */
 #define windowWidth 800
@@ -17,7 +19,15 @@ enum Mode {Random=1, Spiral=2, Grid=3};
 int inputter(enum Mode *);
 
 
+// Elevation
+struct terrain{
+	int x;
+	int y;
+	int intensity; // between 0-255
+};
 
+void terrainInput(terrain *, float *, float *);
+void drawTerrainIntensity(terrain *);
 
 
 // Functions for point generations

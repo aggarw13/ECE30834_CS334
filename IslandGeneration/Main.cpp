@@ -6,29 +6,71 @@
  */
 
 #include <iostream>
+#include "GL/glew.h"
 #include "GL/glut.h"
 #include <cstdlib>
 #include <ctime>
 #include <math.h>
 
+#include <fstream>
+#include <string>
+//#include "GL/gl.h"
+
 #include "IslandGeneration.h"
+
+/* The vertex buffers and the vertex array for the triangle */
+GLuint vertexVbo;
+GLuint colorVbo;
+GLuint triangleVao;
+
+/* The source code of the vertex and fragment shaders */
+std::string vertexShaderCode;
+std::string fragmentShaderCode;
+
+/* References for the vertex and fragment shaders and the shader program */
+GLuint vertexShader = 0;
+GLuint fragmentShader = 0;
+GLuint shaderProgram = 0;
+
+// Vertices
+float circleVertices[100];
+float circleColors[100];
 
 
 // Points
 float * setPoints;
 int numberofPoints;
-Mode pointMode;
+Mode pointMode; // Mode for points scattering
 float voronoiPoints[1000];
-int idx = 0;
+int idx = 0; // idx for putting in points for voronoiPoints
 
 // Voronoi Object
 VD vd;
+
+// Elevation 2D Array
+terrain terrainInfo[windowHeight * windowWidth];
+
+int loadFile(char* filename, std::string& text)
+{
+	std::ifstream ifs;
+	ifs.open(filename, std::ios::in);
+
+	std::string line;
+	while (ifs.good()) {
+        getline(ifs, line);
+		text += line + "\n";
+    }
+	return 0;
+}
 
 void init(){
 	// White color
 	glClearColor(1.0, 1.0, 1.0, 0.0);
 
-	glMatrixMode(GL_PROJECTION);
+	/* Enable the depth buffer */
+    glEnable(GL_DEPTH_TEST);
+
+    glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluOrtho2D(0.0, windowWidth, windowHeight, 0.0);
 
@@ -65,12 +107,77 @@ void init(){
 		} while ( ++et != et_start );
 	}
 
+	// Define elevation
+	terrainInput(terrainInfo, circleVertices, circleColors);
+
+	/* Initialize the vertex shader (generate, load, compile and check errors) */
+	loadFile("vertex.glsl", vertexShaderCode);
+	const char* vertexSource = vertexShaderCode.c_str();
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexSource, NULL);
+	glCompileShader(vertexShader);
+	GLint status = 0;
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
+	if(status != GL_TRUE)
+	{
+		char buffer[512];
+		glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
+		std::cout << "Error while compiling the vertex shader: " << std::endl << buffer << std::endl;
+	}
+
+	/* Initialize the fragment shader (generate, load, compile and check errors) */
+	loadFile("fragment.glsl", fragmentShaderCode);
+	const char* fragmentSource = fragmentShaderCode.c_str();
+	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+	glCompileShader(fragmentShader);
+	status = 0;
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &status);
+	if(status != GL_TRUE)
+	{
+		char buffer[512];
+		glGetShaderInfoLog(fragmentShader, 512, NULL, buffer);
+		std::cout << "Error while compiling the fragment shader: " << std::endl << buffer << std::endl;
+	}
+
+	/* Initialize the Vertex Buffer Object for the location of the vertices */
+	glGenBuffers(1, &vertexVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(circleVertices), circleVertices, GL_STATIC_DRAW);
+
+	/* Initialize the Vertex Buffer Object for the colors of the vertices */
+	glGenBuffers(1, &colorVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, colorVbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(circleColors), circleColors, GL_STATIC_DRAW);
+
+	/* Define the Vertex Array Object for the triangle */
+	glGenVertexArrays(1, &triangleVao);
+	glBindVertexArray(triangleVao);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexVbo);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, colorVbo);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
+	/* Initialize the shader program */
+	shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glBindAttribLocation(shaderProgram, 0, "inPoint");
+	glBindAttribLocation(shaderProgram, 1, "inColor");
+	glLinkProgram(shaderProgram);
+
+
+
+
+
 
 }
 
 void display(){
 	/* Clear the window */
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	/* Draw the line */
 	/* Step 1: Enable the clients for the vertex arrays */
@@ -88,11 +195,16 @@ void display(){
 	glColor3f(0.0, 255.0, 0.0);
 	glDrawArrays(GL_POINTS, 0, numberofPoints);
 
-
-
-
 	/* Step 3: Disable the clients */
 	glDisableClientState(GL_VERTEX_ARRAY);
+
+
+	// Use vertex to draw intensity
+	glUseProgram(shaderProgram);
+	drawTerrainIntensity(terrainInfo);
+
+
+
 
 	/* Force execution of OpenGL commands */
 	glFlush();
@@ -133,6 +245,16 @@ int main(int argc, char ** argv){
 	glutInitWindowPosition(30, 30);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 	glutCreateWindow("Points");
+
+	/* Init GLEW */
+	GLenum err = glewInit();
+	if (GLEW_OK != err)
+	{
+		/* Problem: glewInit failed, something is seriously wrong. */
+		std::cout << "Error: " << glewGetErrorString(err) << std::endl;
+	}
+	std::cout << "GLEW version: " << glewGetString(GLEW_VERSION) << std::endl;
+
 
 	// Initialization
 	init();

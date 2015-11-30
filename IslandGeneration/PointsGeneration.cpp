@@ -55,16 +55,18 @@ void generateSpiralPoints(float ** setPoints, int numberofPoints){
 }
 
 void generateGridPoints(float ** setPoints, int numberofPoints){
-	int cellcount, xcellct, ycellct, cellxwidth, cellyheight, xp, yp, i;
-	cellcount = windowHeight * windowWidth / numberofPoints;
-	xcellct = windowWidth / (numberofPoints / 2);
-	ycellct = windowHeight / (numberofPoints / 2);
-	cellxwidth = windowWidth / xcellct;
-	cellyheight = windowHeight / ycellct;
-	for(xp = cellxwidth / 2, yp = cellyheight / 2; (xp < windowWidth) && (yp < windowHeight) && (i  + 1 < numberofPoints * 2); xp += cellxwidth, yp += cellyheight){
-		(*setPoints)[i] = xp;
-		(*setPoints)[i + 1] = yp;
-		i += 2;
+	int squareArea = windowHeight * windowWidth / numberofPoints;
+	int squareSide = (int) sqrt((double) squareArea);
+	int columns = windowWidth / squareSide;
+	int rows = windowHeight / squareSide;
+	*setPoints = (float *) malloc(sizeof(float) * numberofPoints * 2);
+
+	int r, c, i;
+	for(r = squareSide / 2; r < windowHeight && i < numberofPoints * 2; r += squareSide){
+		for(c = squareSide / 2; c < windowWidth && i < numberofPoints * 2; c += squareSide){
+			(*setPoints)[i++] = c;
+			(*setPoints)[i++] = r;
+		}
 	}
 
 }
