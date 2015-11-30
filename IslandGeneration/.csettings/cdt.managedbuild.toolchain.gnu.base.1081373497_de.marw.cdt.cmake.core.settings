@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 5.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage2">
+	<storageModule moduleId="de.marw.cdt.cmake.core.settings">
+		<options/>
+		<linux command="cmake" generator="UnixMakefiles" use-default="true">
+			<defs>
+				<def name="CGAL_DIR" type="PATH" val="/home/aimanuslim/CGAL-4.7"/>
+			</defs>
+			<undefs/>
+		</linux>
+		<win32 command="cmake" generator="MinGWMakefiles" use-default="true">
+			<defs/>
+			<undefs/>
+		</win32>
+		<defs>
+			<def name="CGAL_DIR" type="PATH" val="/home/aimanuslim/CGAL-4.7"/>
+		</defs>
+		<undefs/>
+	</storageModule>
+</cproject>
