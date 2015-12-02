@@ -5,6 +5,7 @@
  *      Author: aimanuslim
  */
 
+
 #include <iostream>
 #include "GL/glew.h"
 #include "GL/glut.h"
@@ -18,16 +19,26 @@
 
 #include "IslandGeneration.h"
 
-/* The vertex buffers and the vertex array*/
-GLuint vertexVbo;
-GLuint colorVbo;;
+/* Circle buffers */
+GLuint vertexVbo; // circles
+GLuint colorVbo; // circles
 GLuint circlesVao;
+
+// Points buffers
 GLuint pointsVbo;
 GLuint pointsColorsVbo;
 GLuint pointsVao;
+
+// Voronoi buffers
 GLuint voronoiVbo;
 GLuint voronoiVao;
 GLuint voronoiColorsVbo;
+
+// Water buffers
+GLuint waterVbo;
+GLuint waterColorsVbo;
+GLuint waterVao;
+
 
 /* The source code of the vertex and fragment shaders */
 std::string vertexShaderCode;
@@ -38,9 +49,15 @@ GLuint vertexShader = 0;
 GLuint fragmentShader = 0;
 GLuint shaderProgram = 0;
 
-// Vertices
-float circleVertices[10000];
-float circleColors[10000];
+// Water
+float waterVertices[windowWidth * windowHeight * 3] = {0};
+float waterColors [windowWidth * windowHeight * 3] = {0};
+int waterPtCt;
+float thres = 0.0000000005;
+
+// Circle
+float circleVertices[windowWidth * windowHeight * 3];
+float circleColors[windowWidth * windowHeight * 3];
 int circlePointCt;
 
 // Points
@@ -49,8 +66,9 @@ int numberofPoints = 100;
 float setPointsColors[100 * 3];
 Mode pointMode = Random; // Mode for points scattering
 
-float voronoiPoints[10000];
-float voronoiColors[10000];
+// Voronoi
+float voronoiPoints[windowWidth * windowHeight * 3];
+float voronoiColors[windowWidth * windowHeight * 3];
 int idx = 0; // idx for putting in points for voronoiPoints
 
 // Voronoi Object
@@ -127,16 +145,36 @@ void initShadersVAOS(){
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 
+		/******************************************Water Data VAO*********************************************/
+		glGenBuffers(1, &waterVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, waterVbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * waterPtCt, circleVertices, GL_STATIC_DRAW);
+
+		/* Initialize the Vertex Buffer Object for the colors of the vertices */
+		glGenBuffers(1, &waterColorsVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, waterColorsVbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 *  waterPtCt, waterColors, GL_STATIC_DRAW);
+
+		/* Define the Vertex Array Object for the points */
+		glGenVertexArrays(1, &waterVao);
+		glBindVertexArray(waterVao);
+		glBindBuffer(GL_ARRAY_BUFFER, waterVbo);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glBindBuffer(GL_ARRAY_BUFFER, waterColorsVbo);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+
 		/******************************************Circle Data VAO*********************************************/
 		/* Initialize the Vertex Buffer Object for the location of the vertices */
 		glGenBuffers(1, &vertexVbo);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexVbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(circleVertices), circleVertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * circlePointCt * 3, circleVertices, GL_STATIC_DRAW);
 
 		/* Initialize the Vertex Buffer Object for the colors of the vertices */
 		glGenBuffers(1, &colorVbo);
 		glBindBuffer(GL_ARRAY_BUFFER, colorVbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(circleColors), circleColors, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * circlePointCt * 3, circleColors, GL_STATIC_DRAW);
 
 		/* Define the Vertex Array Object for the circles */
 		glGenVertexArrays(1, &circlesVao);
@@ -184,6 +222,7 @@ void initShadersVAOS(){
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		gluOrtho2D(0.0, windowWidth, windowHeight, 0.0);
+
 }
 
 void init(){
@@ -192,6 +231,7 @@ void init(){
 
 	/* Enable the depth buffer */
     glEnable(GL_DEPTH_TEST);
+    glEnable( GL_BLEND );
 
 //    glMatrixMode(GL_PROJECTION);
 //	glLoadIdentity();
@@ -259,6 +299,9 @@ void init(){
 	// Define elevation
 	circlePointCt = terrainInput(terrainInfo, circleVertices, circleColors);
 
+
+	// Find water
+	waterPtCt = findPotentialWaterSpots(thres, waterVertices, waterColors, terrainInfo);
 	initShadersVAOS();
 
 }
@@ -266,12 +309,15 @@ void init(){
 
 void drawAll(int circlePointCt){
 	glBindVertexArray(circlesVao);
-	glDrawArrays(GL_TRIANGLES, 0, circlePointCt);
+	glDrawArrays(GL_POINTS, 0, circlePointCt);
 	glPointSize(2.0f);
 	glBindVertexArray(pointsVao);
 	glDrawArrays(GL_POINTS, 0, numberofPoints);
 	glBindVertexArray(voronoiVao);
 	glDrawArrays(GL_LINES, 0, idx / 3);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBindVertexArray(waterVao);
+	glDrawArrays(GL_POINTS, 0, waterPtCt);
 
 }
 
@@ -332,10 +378,15 @@ void keyboard(unsigned char k, int x, int y)
 	{
 		exit(0);
 	}
+	else if(k == 'd'){
+		thres /= 2;
+	}
 }
 
 void freeStuffs(){
 	free(setPoints);
+//	free(waterVertices);
+//	free(waterColors);
 }
 
 int main(int argc, char ** argv){

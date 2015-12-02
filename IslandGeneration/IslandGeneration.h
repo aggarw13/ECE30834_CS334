@@ -5,6 +5,8 @@
 #define PI 3.14159 
 #define DELTA 30.00 // angle step difference for spiral
 #define MAX_RADIUS 120
+#define GRADIENT_DELTA 5
+
 
 
 /* Window information */
@@ -14,7 +16,7 @@
 
 // Points generation modes
 enum Mode {Random=1, Spiral=2, Grid=3};
-
+enum Dir {N, S, W, E, NE, SE, SW, NW};
 // Main
 int inputter(enum Mode *);
 
@@ -26,7 +28,17 @@ struct terrain{
 	float intensity; // between 0-1
 };
 
+// Gradient information
+struct gradient{
+	float mag;
+	float directionAngle;
+	enum Dir direction;
+};
+#define elevDiffThreshold 0.3
+
 int terrainInput(terrain *, float *, float *);
+int findPotentialWaterSpots(float **, float **, terrain *);
+
 float normalize(int, int);
 
 
@@ -38,7 +50,9 @@ void generateGridPoints(float **, int);
 // Lloyd relaxation Functions
 float * LloydRelaxation(float *);
 
-
+// Water functions
+void fillWater(float, float * waterVertices, float * waterColors, int leftbound, int rightbound, int upperbound, int lowerbound);
+int findPotentialWaterSpots(float, float * waterVertices, float * waterColors, terrain * terrainInfo);
 
 
 // includes for defining the Voronoi diagram adaptor
