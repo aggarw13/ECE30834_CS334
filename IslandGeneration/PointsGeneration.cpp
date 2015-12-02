@@ -22,18 +22,14 @@ int inputter(enum Mode * pointMode){
 }
 
 void generateRandomPoints(float ** setPoints, int numberofPoints){
- 	*setPoints = (float *) malloc(sizeof(float) * numberofPoints * 2);
+ 	*setPoints = (float *) malloc(sizeof(float) * numberofPoints * 3);
 
  	srand((unsigned)time(0)); 
-     
-    for(int i=0; i<numberofPoints * 2; i++){
-    	
-    	if((i + 1) % 2 == 0){
-    		(*setPoints)[i] = (rand() % (int) windowHeight) + 1;
-    	} else{ 
-    		(*setPoints)[i] = (rand() % (int) windowWidth) + 1;
-        }
-        //cout << setPoints[i] << " " ;
+    int i = 0;
+    while(i < numberofPoints * 3){
+    	(*setPoints)[i++] = normalize((rand() % (int) windowHeight) + 1, windowHeight);
+    	(*setPoints)[i++] = normalize((rand() % (int) windowWidth) + 1, windowWidth);
+    	(*setPoints)[i++] = 0.0f;
    	} 
 }
 
@@ -42,15 +38,15 @@ void generateSpiralPoints(float ** setPoints, int numberofPoints){
 	float x, y, R;
 	float theta; // theta is in radians
 	int i = 0;
- 	*setPoints = (float *) malloc(sizeof(float) * numberofPoints * 2);
+ 	*setPoints = (float *) malloc(sizeof(float) * numberofPoints * 3);
 	x = 0; y = 0; R = 10;
-	for(theta = 0; i + 1 < numberofPoints * 2; theta += (PI / DELTA)){
+	for(theta = 0; i + 1 < numberofPoints * 3; theta += (PI / DELTA)){
 		x = R * cos(theta) + windowWidth / 2;
 		y = R * sin(theta) + windowHeight / 2;
 		R += 10;
-		(*setPoints)[i] = x;
-		(*setPoints)[i + 1] = y;
-		i += 2;
+		(*setPoints)[i++] = normalize(x, windowWidth);
+		(*setPoints)[i++] = normalize(y, windowHeight);
+		(*setPoints)[i++] = 0;
 	}
 }
 
@@ -59,13 +55,14 @@ void generateGridPoints(float ** setPoints, int numberofPoints){
 	int squareSide = (int) sqrt((double) squareArea);
 	int columns = windowWidth / squareSide;
 	int rows = windowHeight / squareSide;
-	*setPoints = (float *) malloc(sizeof(float) * numberofPoints * 2);
+	*setPoints = (float *) malloc(sizeof(float) * numberofPoints * 3);
 
-	int r, c, i;
-	for(r = squareSide / 2; r < windowHeight && i < numberofPoints * 2; r += squareSide){
-		for(c = squareSide / 2; c < windowWidth && i < numberofPoints * 2; c += squareSide){
-			(*setPoints)[i++] = c;
-			(*setPoints)[i++] = r;
+	int r, c, i = 0;
+	for(r = squareSide / 2; r < windowHeight && i < numberofPoints * 3; r += squareSide){
+		for(c = squareSide / 2; c < windowWidth && i < numberofPoints * 3; c += squareSide){
+			(*setPoints)[i++] = normalize(c, windowWidth);
+			(*setPoints)[i++] = normalize(r, windowHeight);
+			(*setPoints)[i++] = 0.0f;
 		}
 	}
 

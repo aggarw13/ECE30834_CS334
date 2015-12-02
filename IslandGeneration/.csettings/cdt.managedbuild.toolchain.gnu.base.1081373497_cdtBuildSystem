@@ -12,7 +12,7 @@
 						<option id="gnu.cpp.compiler.option.include.paths.1111403474" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 							<listOptionValue builtIn="false" value="/usr/local/include/CGAL"/>
 							<listOptionValue builtIn="false" value="/usr/local/include/GLFW"/>
-							<listOptionValue builtIn="false" value="glew"/>
+							<listOptionValue builtIn="false" value="GLEW"/>
 							<listOptionValue builtIn="false" value="/usr/include/CGAL"/>
 						</option>
 						<option id="gnu.cpp.compiler.option.dialect.std.1973167361" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
@@ -27,7 +27,7 @@
 					<tool command="g++" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GLDErrorParser" id="cdt.managedbuild.tool.gnu.cpp.linker.base.1898254984" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
 						<option id="gnu.cpp.link.option.libs.1563423423" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 							<listOptionValue builtIn="false" value="GLU"/>
-							<listOptionValue builtIn="false" value="glew"/>
+							<listOptionValue builtIn="false" value="GLEW"/>
 							<listOptionValue builtIn="false" value="gmp"/>
 							<listOptionValue builtIn="false" value="mpfr"/>
 							<listOptionValue builtIn="false" value="boost_thread"/>

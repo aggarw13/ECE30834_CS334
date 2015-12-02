@@ -3,8 +3,8 @@
 #define ISLAND_GENERATION
 
 #define PI 3.14159 
-#define DELTA 6 // angle step difference for spiral
-#define MAX_RADIUS 15
+#define DELTA 30.00 // angle step difference for spiral
+#define MAX_RADIUS 120
 
 
 /* Window information */
@@ -23,11 +23,11 @@ int inputter(enum Mode *);
 struct terrain{
 	int x;
 	int y;
-	int intensity; // between 0-255
+	float intensity; // between 0-1
 };
 
-void terrainInput(terrain *, float *, float *);
-void drawTerrainIntensity(terrain *);
+int terrainInput(terrain *, float *, float *);
+float normalize(int, int);
 
 
 // Functions for point generations
