@@ -64,9 +64,9 @@ int circlePointCt;
 
 // Points
 float * setPoints;
-int numberofPoints = 100;
+int numberofPoints = 1000;
 float setPointsColors[100 * 3];
-Mode pointMode = Random; // Mode for points scattering
+Mode pointMode = Spiral; // Mode for points scattering
 
 // Voronoi
 float voronoiPoints[windowWidth * windowHeight * 3];
@@ -293,9 +293,9 @@ void init(){
 
 	i = 0;
 	while(i < idx){
-		voronoiColors[i++] = 1.0f;
-		voronoiColors[i++] = 0.0f;
-		voronoiColors[i++] = 0.0f;
+		voronoiColors[i++] = (float) ((rand() % (int) 255) + 1) / 255.0f;//1.0f;
+		voronoiColors[i++] = (float) ((rand() % (int) 255) + 1) / 255.0f;// 0.0f;
+		voronoiColors[i++] = (float) ((rand() % (int) 255) + 1) / 255.0f;//0.0f;
 	}
 
 	// Define elevation

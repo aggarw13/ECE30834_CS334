@@ -6,7 +6,10 @@ CC = g++
 .PHONY: default all clean
 
 default: $(TARGET)
+
 all: default
+run: $(TARGET)
+	./$(TARGET)
 
 OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 HEADERS = $(wildcard *.h)

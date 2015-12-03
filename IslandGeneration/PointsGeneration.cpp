@@ -39,11 +39,11 @@ void generateSpiralPoints(float ** setPoints, int numberofPoints){
 	float theta; // theta is in radians
 	int i = 0;
  	*setPoints = (float *) malloc(sizeof(float) * numberofPoints * 3);
-	x = 0; y = 0; R = 10;
+	x = 0; y = 0; R = 5;
 	for(theta = 0; i + 1 < numberofPoints * 3; theta += (PI / DELTA)){
 		x = R * cos(theta) + windowWidth / 2;
 		y = R * sin(theta) + windowHeight / 2;
-		R += 10;
+		R += 2;
 		(*setPoints)[i++] = normalize(x, windowWidth);
 		(*setPoints)[i++] = normalize(y, windowHeight);
 		(*setPoints)[i++] = 0;
