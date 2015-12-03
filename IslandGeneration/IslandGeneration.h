@@ -51,8 +51,8 @@ void generateGridPoints(float **, int);
 float * LloydRelaxation(float *);
 
 // Water functions
-void fillWater(float, float * waterVertices, float * waterColors, int leftbound, int rightbound, int upperbound, int lowerbound);
-int findPotentialWaterSpots(float, float * waterVertices, float * waterColors, terrain * terrainInfo);
+int fillWater(float, float ** waterVertices, float ** waterColors, int leftbound, int rightbound, int upperbound, int lowerbound);
+int findPotentialWaterSpots(float, float ** waterVertices, float ** waterColors);
 
 
 // includes for defining the Voronoi diagram adaptor
