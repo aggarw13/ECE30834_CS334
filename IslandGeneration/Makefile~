@@ -1,0 +1,8 @@
+HEADERS= IslandGeneration.h
+FLAGS= -lGLU -lGL -lglut -lGLEW -lCGAL -lgmp -lmpfr
+OPTIONS = 
+
+default: IslandGen
+
+Main.o: Main.cpp IslandGeneration.h
+	g++ -c Main.cpp -o Main.o
