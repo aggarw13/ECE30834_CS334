@@ -40,7 +40,7 @@ int vIdx = 0, colorIdx;
 int terrainInput(terrain * terrainArr, double * circleVertices, double * circleColor){
 
 	int waterIdx;
-	int waterLocCount = 3;
+	int waterLocCount = 5;
 	terrain  waterLocations[waterLocCount];
 	for(waterIdx = 0; waterIdx < waterLocCount; waterIdx++){
 		waterLocations[waterIdx].x = (rand() % (int) windowWidth) + 1;
@@ -49,7 +49,7 @@ int terrainInput(terrain * terrainArr, double * circleVertices, double * circleC
 		waterLocations[waterIdx].waterValue = 1.0f;
 	}
 
-	int circlesCt = 120;
+	int circlesCt = 4;
 	int circleIdx;
 	//terrain allIntensity[circlesCt] = {intensity1, intensity2, intensity3, intensity4, intensity5, intensity6};
 	terrain allIntensity[circlesCt];
@@ -62,7 +62,7 @@ int terrainInput(terrain * terrainArr, double * circleVertices, double * circleC
 	double xpos0, xpos1, ypos0, ypos1, r;
 	double theta = 0;
 	int vi = 0, coli = 0, i;
-	r = 80;
+	r = 600; // for circles
 
 	int x,y;
 	i = 0;
@@ -75,16 +75,17 @@ int terrainInput(terrain * terrainArr, double * circleVertices, double * circleC
 				if(distFromCenter < 1.000000f){
 					// the further you are, the less intensity, lower elevation
 					elevation[x][y] +=  allIntensity[i].intensity * (1.0f - distFromCenter);
+					if(elevation[x][y] > 1.0){ elevation[x][y] = 1.0; }
 				}
 				else {
 					elevation[x][y] +=  0.0f;
 				}
 			}
+			elevation[x][y] *= 0.6;
 		}
 	}
 
-//	r = windowWidth / 2;
-	r = 100;
+	r = 80; // for water
 	for(x = 0; x < windowWidth; x++){
 			for(y = 0; y < windowHeight; y++){
 				for(i = 0; i < waterLocCount; i++){
@@ -93,6 +94,8 @@ int terrainInput(terrain * terrainArr, double * circleVertices, double * circleC
 					if(distFromCenter < 1.000000f){
 						// the further you are, the less intensity, less water
 						waterIntensity[x][y] +=  waterLocations[i].waterValue * (1.0f - distFromCenter) - (elevation[x][y]);
+						if(waterIntensity[x][y] > 1.0){waterIntensity[x][y] = 1.0f;}
+						if(waterIntensity[x][y] < 0.0){waterIntensity[x][y] = 0.0f;}
 					}
 					else {
 						waterIntensity[x][y] +=  0.0f;
@@ -100,6 +103,7 @@ int terrainInput(terrain * terrainArr, double * circleVertices, double * circleC
 				}
 			}
 		}
+
 
 
 
@@ -133,7 +137,7 @@ int terrainInput(terrain * terrainArr, double * circleVertices, double * circleC
 	// Perlin, may or may not be needed
 	// generatePerlinNoise(circleVertices);
 
-	biomesGeneration(circleColor, elevation, waterIntensity, biomesInformation);
+	biomesGeneration(circleColor, elevation, waterLocations, waterLocCount, biomesInformation);
 
 	return windowWidth * windowHeight;
 

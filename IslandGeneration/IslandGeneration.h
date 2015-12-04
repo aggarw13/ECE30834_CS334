@@ -47,7 +47,7 @@ enum Biome{
 	SUBTROPDESERT = 12,
 };
 void findCategory(double elevation, double moisture, int * category);
-void biomesGeneration(double * colors, double elevation[windowWidth][windowHeight], double moisture[windowWidth][windowHeight], double biomesInfo[windowWidth][windowHeight]);
+void biomesGeneration(double * colors, double elevation[windowWidth][windowHeight], terrain *, int, double biomesInfo[windowWidth][windowHeight]);
 
 
 
