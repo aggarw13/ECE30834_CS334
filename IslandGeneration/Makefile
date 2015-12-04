@@ -1,6 +1,6 @@
 TARGET = IslandGen
 LIBS = -lGLU -lGL -lglut -lGLEW -lCGAL -lgmp -lmpfr
-FLAGS = -g -O0
+FLAGS = -g -O0 -std=c++11 
 CC = g++
 
 .PHONY: default all clean
@@ -14,13 +14,16 @@ run: $(TARGET)
 OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 HEADERS = $(wildcard *.h)
 
-%.o: %.c $(HEADERS)
-	$(CC) $(CFLAGS) -c $< $(LIBS) -o $@
+#Perlin.o: Perlin.cpp PerlinNoise.h
+#	$(CC) -g -O0 -std=c++11 $(FLAGS) -c Perlin.cpp
+
+%.o: %.cpp $(HEADERS)
+	$(CC) $(FLAGS) -c $< $(LIBS) -o $@
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -Wall $(LIBS) -o $@
+	$(CC) $(FLAGS) $(OBJECTS) -Wall $(LIBS) -o $@
 
 clean:
 	-rm -f *.o

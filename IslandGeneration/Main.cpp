@@ -50,27 +50,27 @@ GLuint fragmentShader = 0;
 GLuint shaderProgram = 0;
 
 // Water
-//float waterVertices[windowWidth * windowHeight * 3] = {0};
-//float waterColors [windowWidth * windowHeight * 3] = {0};
-float * waterVertices = NULL;
-float * waterColors = NULL;
+//double waterVertices[windowWidth * windowHeight * 3] = {0};
+//double waterColors [windowWidth * windowHeight * 3] = {0};
+double * waterVertices = NULL;
+double * waterColors = NULL;
 int waterPtCt;
-float thres = 0.0005;
+double thres = 0.0005;
 
 // Circle
-float circleVertices[windowWidth * windowHeight * 3];
-float circleColors[windowWidth * windowHeight * 3];
+double circleVertices[windowWidth * windowHeight * 3];
+double circleColors[windowWidth * windowHeight * 3];
 int circlePointCt;
 
 // Points
-float * setPoints;
+double * setPoints;
 int numberofPoints = 1000;
-float setPointsColors[100 * 3];
-Mode pointMode = Spiral; // Mode for points scattering
+double setPointsColors[1000 * 3];
+Mode pointMode = Random; // Mode for points scattering
 
 // Voronoi
-float voronoiPoints[windowWidth * windowHeight * 3];
-float voronoiColors[windowWidth * windowHeight * 3];
+double voronoiPoints[windowWidth * windowHeight * 3];
+double voronoiColors[windowWidth * windowHeight * 3];
 int idx = 0; // idx for putting in points for voronoiPoints
 
 // Voronoi Object
@@ -92,8 +92,8 @@ int loadFile(char* filename, std::string& text)
 	return 0;
 }
 
-float normalize(int pos, int max){
-	return  2.0f * ((float) pos / (float) max) - 1.0f;
+double normalize(int pos, int max){
+	return  2.0f * ((double) pos / (double) max) - 1.0f;
 }
 
 void initShadersVAOS(){
@@ -130,7 +130,7 @@ void initShadersVAOS(){
 		/******************************************Points Data VAO*********************************************/
 		glGenBuffers(1, &pointsVbo);
 		glBindBuffer(GL_ARRAY_BUFFER, pointsVbo);
-		glBufferData(GL_ARRAY_BUFFER, numberofPoints * 3 * sizeof(float), setPoints, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, numberofPoints * 3 * sizeof(double), setPoints, GL_STATIC_DRAW);
 
 		/* Initialize the Vertex Buffer Object for the colors of the vertices */
 		glGenBuffers(1, &pointsColorsVbo);
@@ -141,29 +141,29 @@ void initShadersVAOS(){
 		glGenVertexArrays(1, &pointsVao);
 		glBindVertexArray(pointsVao);
 		glBindBuffer(GL_ARRAY_BUFFER, pointsVbo);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
 		glBindBuffer(GL_ARRAY_BUFFER, pointsColorsVbo);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 
 		/******************************************Water Data VAO*********************************************/
 		glGenBuffers(1, &waterVbo);
 		glBindBuffer(GL_ARRAY_BUFFER, waterVbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * waterPtCt, waterVertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 * waterPtCt, waterVertices, GL_STATIC_DRAW);
 
 		/* Initialize the Vertex Buffer Object for the colors of the vertices */
 		glGenBuffers(1, &waterColorsVbo);
 		glBindBuffer(GL_ARRAY_BUFFER, waterColorsVbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 *  waterPtCt, waterColors, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 *  waterPtCt, waterColors, GL_STATIC_DRAW);
 
 		/* Define the Vertex Array Object for the points */
 		glGenVertexArrays(1, &waterVao);
 		glBindVertexArray(waterVao);
 		glBindBuffer(GL_ARRAY_BUFFER, waterVbo);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
 		glBindBuffer(GL_ARRAY_BUFFER, waterColorsVbo);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 
@@ -171,20 +171,20 @@ void initShadersVAOS(){
 		/* Initialize the Vertex Buffer Object for the location of the vertices */
 		glGenBuffers(1, &vertexVbo);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexVbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * circlePointCt * 3, circleVertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * circlePointCt * 3, circleVertices, GL_STATIC_DRAW);
 
 		/* Initialize the Vertex Buffer Object for the colors of the vertices */
 		glGenBuffers(1, &colorVbo);
 		glBindBuffer(GL_ARRAY_BUFFER, colorVbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * circlePointCt * 3, circleColors, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * circlePointCt * 3, circleColors, GL_STATIC_DRAW);
 
 		/* Define the Vertex Array Object for the circles */
 		glGenVertexArrays(1, &circlesVao);
 		glBindVertexArray(circlesVao);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexVbo);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
 		glBindBuffer(GL_ARRAY_BUFFER, colorVbo);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 
@@ -206,9 +206,9 @@ void initShadersVAOS(){
 		glGenVertexArrays(1, &voronoiVao);
 		glBindVertexArray(voronoiVao);
 		glBindBuffer(GL_ARRAY_BUFFER, voronoiVbo);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
 		glBindBuffer(GL_ARRAY_BUFFER, voronoiColorsVbo);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 
@@ -293,9 +293,9 @@ void init(){
 
 	i = 0;
 	while(i < idx){
-		voronoiColors[i++] = (float) ((rand() % (int) 255) + 1) / 255.0f;//1.0f;
-		voronoiColors[i++] = (float) ((rand() % (int) 255) + 1) / 255.0f;// 0.0f;
-		voronoiColors[i++] = (float) ((rand() % (int) 255) + 1) / 255.0f;//0.0f;
+		voronoiColors[i++] = 1.0f; //(double) ((rand() % (int) 255) + 1) / 255.0f;//
+		voronoiColors[i++] = 0.6f; //(double) ((rand() % (int) 255) + 1) / 255.0f;// 0.0f;
+		voronoiColors[i++] = 0.4f; //(double) ((rand() % (int) 255) + 1) / 255.0f;//0.0f;
 	}
 
 	// Define elevation
@@ -303,7 +303,7 @@ void init(){
 
 
 	// Find water
-	waterPtCt = findPotentialWaterSpots(thres, &waterVertices, &waterColors);
+	//waterPtCt = findPotentialWaterSpots(thres, circleVertices, circleColors);
 
 	// Initialize shaders
 	initShadersVAOS();
@@ -388,8 +388,8 @@ void keyboard(unsigned char k, int x, int y)
 
 void freeStuffs(){
 	free(setPoints);
-//	free(waterVertices);
-//	free(waterColors);
+	free(waterVertices);
+	free(waterColors);
 }
 
 int main(int argc, char ** argv){

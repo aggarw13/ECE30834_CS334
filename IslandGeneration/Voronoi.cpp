@@ -15,7 +15,7 @@
 
 
 
-VD generateVoronoi(float ** setPoints, int numberofPoints){
+VD generateVoronoi(double ** setPoints, int numberofPoints){
 	VD vd;
 
 	int i = 0;

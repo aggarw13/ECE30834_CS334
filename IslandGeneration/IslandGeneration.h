@@ -16,7 +16,7 @@
 
 // Points generation modes
 enum Mode {Random=1, Spiral=2, Grid=3};
-enum Dir {N, S, W, E, NE, SE, SW, NW};
+
 // Main
 int inputter(enum Mode *);
 
@@ -25,35 +25,56 @@ int inputter(enum Mode *);
 struct terrain{
 	int x;
 	int y;
-	float intensity; // between 0-1
+	double intensity; // between 0-1
+	double waterValue;
 };
 
-// Gradient information
-struct gradient{
-	float mag;
-	float directionAngle;
-	enum Dir direction;
+// Biomes
+#define biomeMax 13
+enum Biome{
+	SNOW = 0,
+	TUNDRA = 1,
+	BARE = 2,
+	SCORCHED = 3,
+	TAIGA = 4,
+	SHRUBLAND = 5,
+	TEMPDESERT = 6,
+	TEMPRAINF = 7,
+	TEMPDECIDF = 8,
+	GRASSLAND = 9,
+	TROPRAINF = 10,
+	TROPSEASONF = 11,
+	SUBTROPDESERT = 12,
 };
+void findCategory(double elevation, double moisture, int * category);
+void biomesGeneration(double * colors, double elevation[windowWidth][windowHeight], double moisture[windowWidth][windowHeight], double biomesInfo[windowWidth][windowHeight]);
+
+
+
+
 #define elevDiffThreshold 0.3
 
-int terrainInput(terrain *, float *, float *);
-int findPotentialWaterSpots(float **, float **, terrain *);
+int terrainInput(terrain *, double *, double *);
+// int findPotentialWaterSpots(double **, double **, terrain *);
+int findPotentialWaterSpots(double *, double *, terrain *);
 
-float normalize(int, int);
+double normalize(int, int);
 
 
 // Functions for point generations
-void generateRandomPoints(float **, int);
-void generateSpiralPoints(float **, int);
-void generateGridPoints(float **, int);
+void generateRandomPoints(double **, int);
+void generateSpiralPoints(double **, int);
+void generateGridPoints(double **, int);
 
 // Lloyd relaxation Functions
-float * LloydRelaxation(float *);
+double * LloydRelaxation(double *);
 
 // Water functions
-int fillWater(float, float ** waterVertices, float ** waterColors, int leftbound, int rightbound, int upperbound, int lowerbound);
-int findPotentialWaterSpots(float, float ** waterVertices, float ** waterColors);
+int fillWater(double, double ** waterVertices, double ** waterColors, int leftbound, int rightbound, int upperbound, int lowerbound);
+int findPotentialWaterSpots(double, double ** waterVertices, double ** waterColors);
 
+// Perlin functions
+void generatePerlinNoise(double *);
 
 // includes for defining the Voronoi diagram adaptor
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -82,7 +103,7 @@ typedef VD::Ccb_halfedge_circulator   Ccb_halfedge_circulator;
 
 
 // Voronoi functions and definitions
-VD generateVoronoi(float **, int);
+VD generateVoronoi(double **, int);
 
 
 

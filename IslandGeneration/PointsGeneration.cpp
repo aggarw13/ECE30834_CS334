@@ -21,8 +21,8 @@ int inputter(enum Mode * pointMode){
  	return numberofPoints;
 }
 
-void generateRandomPoints(float ** setPoints, int numberofPoints){
- 	*setPoints = (float *) malloc(sizeof(float) * numberofPoints * 3);
+void generateRandomPoints(double ** setPoints, int numberofPoints){
+ 	*setPoints = (double *) malloc(sizeof(double) * numberofPoints * 3);
 
  	srand((unsigned)time(0)); 
     int i = 0;
@@ -33,12 +33,12 @@ void generateRandomPoints(float ** setPoints, int numberofPoints){
    	} 
 }
 
-void generateSpiralPoints(float ** setPoints, int numberofPoints){
+void generateSpiralPoints(double ** setPoints, int numberofPoints){
 	// x = R * cos(theta), y = R * sin(theta)
-	float x, y, R;
-	float theta; // theta is in radians
+	double x, y, R;
+	double theta; // theta is in radians
 	int i = 0;
- 	*setPoints = (float *) malloc(sizeof(float) * numberofPoints * 3);
+ 	*setPoints = (double *) malloc(sizeof(double) * numberofPoints * 3);
 	x = 0; y = 0; R = 5;
 	for(theta = 0; i + 1 < numberofPoints * 3; theta += (PI / DELTA)){
 		x = R * cos(theta) + windowWidth / 2;
@@ -50,12 +50,12 @@ void generateSpiralPoints(float ** setPoints, int numberofPoints){
 	}
 }
 
-void generateGridPoints(float ** setPoints, int numberofPoints){
+void generateGridPoints(double ** setPoints, int numberofPoints){
 	int squareArea = windowHeight * windowWidth / numberofPoints;
 	int squareSide = (int) sqrt((double) squareArea);
 	int columns = windowWidth / squareSide;
 	int rows = windowHeight / squareSide;
-	*setPoints = (float *) malloc(sizeof(float) * numberofPoints * 3);
+	*setPoints = (double *) malloc(sizeof(double) * numberofPoints * 3);
 
 	int r, c, i = 0;
 	for(r = squareSide / 2; r < windowHeight && i < numberofPoints * 3; r += squareSide){
