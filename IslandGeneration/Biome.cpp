@@ -129,23 +129,23 @@ void biomesGeneration(double * colors, double elevation[windowWidth][windowHeigh
 
 
 			// change colors
-//			double m = (double) 1 / 3;
-			double m = (double) 1 / 2;
+			double m = (double) 1 / 3;
+//			double m = (double) 1 / 2;
 			if(x % 3 == 0){
 //				colors[(x + 0) + y * windowWidth * 3] += r;
 //				colors[(x + 0) + y * windowWidth * 3] = colors[(x + 0) + y * windowWidth * 3] / 2 + r;
-//				colors[(x + 0) + y * windowWidth * 3] = r * m  + elevation[xidx][y] * m;
-				colors[(x + 0) + y * windowWidth * 3] = r * m;
+				colors[(x + 0) + y * windowWidth * 3] = r * m  + elevation[xidx][y] * m;
+//				colors[(x + 0) + y * windowWidth * 3] = r * m;
 				colors[(x + 0) + y * windowWidth * 3] *= 2;
 //				colors[(x + 1) + y * windowWidth * 3] += g;
 //				colors[(x + 1) + y * windowWidth * 3] = colors[(x + 1) + y * windowWidth * 3] / 2 + g;
-//				colors[(x + 1) + y * windowWidth * 3] = g * m + elevation[xidx][y] * m;
-				colors[(x + 1) + y * windowWidth * 3] = g * m;
+				colors[(x + 1) + y * windowWidth * 3] = g * m + elevation[xidx][y] * m;
+//				colors[(x + 1) + y * windowWidth * 3] = g * m;
 				colors[(x + 1) + y * windowWidth * 3] *= 2;
 //				colors[(x + 2) + y * windowWidth * 3] += b;
 //				colors[(x + 2) + y * windowWidth * 3] = colors[(x + 2) + y * windowWidth * 3] / 2 + b;
-//				colors[(x + 2) + y * windowWidth * 3] = b * m + elevation[xidx][y] * m + moisture[xidx][y] * m;
-				colors[(x + 2) + y * windowWidth * 3] = b * m + moisture * 0.8;
+				colors[(x + 2) + y * windowWidth * 3] = b * m + elevation[xidx][y] * m + moisture * m;
+//				colors[(x + 2) + y * windowWidth * 3] = b * m + moisture * 0.8;
 				colors[(x + 2) + y * windowWidth * 3] *= 2;
 
 				if(colors[(x + 0) + y * windowWidth * 3] > 1.0){colors[(x + 0) + y * windowWidth * 3] = 1.0;}

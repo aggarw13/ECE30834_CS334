@@ -40,7 +40,7 @@ int vIdx = 0, colorIdx;
 int terrainInput(terrain * terrainArr, double * circleVertices, double * circleColor){
 
 	int waterIdx;
-	int waterLocCount = 5;
+	int waterLocCount = 10;
 	terrain  waterLocations[waterLocCount];
 	for(waterIdx = 0; waterIdx < waterLocCount; waterIdx++){
 		waterLocations[waterIdx].x = (rand() % (int) windowWidth) + 1;
@@ -49,7 +49,7 @@ int terrainInput(terrain * terrainArr, double * circleVertices, double * circleC
 		waterLocations[waterIdx].waterValue = 1.0f;
 	}
 
-	int circlesCt = 4;
+	int circlesCt = 40;
 	int circleIdx;
 	//terrain allIntensity[circlesCt] = {intensity1, intensity2, intensity3, intensity4, intensity5, intensity6};
 	terrain allIntensity[circlesCt];
@@ -62,7 +62,7 @@ int terrainInput(terrain * terrainArr, double * circleVertices, double * circleC
 	double xpos0, xpos1, ypos0, ypos1, r;
 	double theta = 0;
 	int vi = 0, coli = 0, i;
-	r = 600; // for circles
+	r = 100; // for circles
 
 	int x,y;
 	i = 0;
