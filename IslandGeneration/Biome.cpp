@@ -76,7 +76,7 @@ void findCategory(double elevation, double moisture, int * category){
 	//printf("Elevation: %f, idx=%d Moisture: %f, idx=%d\n", elevation, category[0], moisture, category[1]);
 }
 
-void biomesGeneration(double * colors, double elevation[windowWidth][windowHeight], terrain * waterLocations, int waterCt, double biomesInfo[windowWidth][windowHeight]){
+void biomesGeneration(double * colors, double elevation[windowWidth][windowHeight], terrain * waterLocations, int waterCt, Biome biomesInfo[windowWidth][windowHeight]){
 	int x, y, xidx, waterIdx;
 	double r, g, b;
 	int isWater, isHighest;
@@ -104,7 +104,7 @@ void biomesGeneration(double * colors, double elevation[windowWidth][windowHeigh
 			//printf(" %f ", elevation[x][y]);
 			// use category to index into biomeTable
 			Biome thisBiome = biomeTable[category[0]][category[1]];
-
+			biomesInfo[xidx][y] = thisBiome;
 
 			// define colors using biomeColors
 			r = (double) biomeColors[thisBiome][0] / 255;

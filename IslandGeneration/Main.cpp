@@ -40,6 +40,12 @@ GLuint voronoiVbo;
 GLuint voronoiVao;
 GLuint voronoiColorsVbo;
 
+// Delaunay points buffer
+GLuint delaunayVbo;
+GLuint delaunayColorsVbo;
+GLuint delaunayVao;
+
+
 // Water buffers
 GLuint waterVbo;
 GLuint waterColorsVbo;
@@ -67,10 +73,12 @@ double thres = 0.0005;
 double circleVertices[windowWidth * windowHeight * 3];
 double circleColors[windowWidth * windowHeight * 3];
 int circlePointCt;
+double elevation[windowWidth][windowHeight] = {0};
+Biome biomesInformation[windowWidth][windowHeight];
 
 // Points
 double * setPoints;
-int numberofPoints = 1000;
+int numberofPoints = 10000;
 double setPointsColors[1000 * 3];
 Mode pointMode = Random; // Mode for points scattering
 
@@ -102,14 +110,17 @@ float dist = 0;
 // Voronoi
 double voronoiPoints[windowWidth * windowHeight * 3];
 double voronoiColors[windowWidth * windowHeight * 3];
+double delaunayPoints[windowWidth * windowHeight * 3 * 3];
+double delaunayColors[windowWidth * windowHeight * 3 * 3];
 int idx = 0; // idx for putting in points for voronoiPoints
+int didx = 0; // index for drawing delaunay points
 
 // Voronoi Object
 VD vd;
 
 
 // Elevation 2D Array
-terrain terrainInfo[windowHeight * windowWidth];
+//terrain terrainInfo[windowHeight * windowWidth];
 
 /* The transformation matrices */
 glm::mat4 modelMatrix;
@@ -122,7 +133,7 @@ GLint viewMatrixLocation;
 GLint projMatrixLocation;
 
 /* Information of the rotation */
-float angle = 21.237171f;
+float angle = 90.0f;
 float angleStep = PI / 50.0f;
 
 
@@ -151,9 +162,9 @@ void initShadersVAOS(){
 
 	  glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		glFrontFace(GL_CCW);
+//		glEnable(GL_CULL_FACE);
+//		glCullFace(GL_BACK);
+//		glFrontFace(GL_CCW);
 
 
 	/* Initialize the vertex shader (generate, load, compile and check errors) */
@@ -185,6 +196,27 @@ void initShadersVAOS(){
 			glGetShaderInfoLog(fragmentShader, 512, NULL, buffer);
 			std::cout << "Error while compiling the fragment shader: " << std::endl << buffer << std::endl;
 		}
+
+		/****************************************** Delaunay Data VAO*********************************************/
+
+		glGenBuffers(1, &delaunayVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, delaunayVbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(delaunayPoints), delaunayPoints, GL_STATIC_DRAW);
+
+		/* Initialize the Vertex Buffer Object for the colors of the vertices */
+		glGenBuffers(1, &delaunayColorsVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, delaunayColorsVbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(delaunayColors), delaunayColors, GL_STATIC_DRAW);
+
+		/* Define the Vertex Array Object for the points */
+		glGenVertexArrays(1, &delaunayVao);
+		glBindVertexArray(delaunayVao);
+		glBindBuffer(GL_ARRAY_BUFFER, delaunayVbo);
+		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
+		glBindBuffer(GL_ARRAY_BUFFER, delaunayColorsVbo);
+		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
 
 		/******************************************Points Data VAO*********************************************/
 		glGenBuffers(1, &pointsVbo);
@@ -316,58 +348,25 @@ void init(){
 		default: break;
 	}
 
-	vd = generateVoronoi(&setPoints, numberofPoints);
-
-	// Fill in points for voronoi edges
-	VD::Face_iterator ft = vd.faces_begin();
-
-	for(;ft != vd.faces_end();ft++){
-		Ccb_halfedge_circulator et_start = (*ft).ccb();
-		Ccb_halfedge_circulator et = et_start;
-		do {
-			if(et->has_source() && et->has_target()){
-				voronoiPoints[idx++] = et->source()->point().x();
-				voronoiPoints[idx++] = et->source()->point().y();
-//				voronoiPoints[idx++] = 0;
-				voronoiPoints[idx++] = ZPOS;
-				voronoiPoints[idx++] = et->target()->point().x();
-				voronoiPoints[idx++] = et->target()->point().y();
-//				voronoiPoints[idx++] = 0;
-				voronoiPoints[idx++] = ZPOS;
-
-			}
-//			else {
-//				if(et->has_source){
-//					voronoiPoints[idx++] = et->source()->point().x();
-//					voronoiPoints[idx++] = et->source()->point().y();
-//					voronoiPoints[idx++] = 0;
-//
-//				}
-//			}
-		} while ( ++et != et_start );
-	}
-
-	//fill in colors
-	int i = 0;
-	while(i < numberofPoints * 3){
-		setPointsColors[i++] = 0.0f;
-		setPointsColors[i++] = 1.0f;
-		setPointsColors[i++] = 0.0f;
-	}
-
-	i = 0;
-	while(i < idx){
-		voronoiColors[i++] = 1.0f; //(double) ((rand() % (int) 255) + 1) / 255.0f;//
-		voronoiColors[i++] = 0.6f; //(double) ((rand() % (int) 255) + 1) / 255.0f;// 0.0f;
-		voronoiColors[i++] = 0.4f; //(double) ((rand() % (int) 255) + 1) / 255.0f;//0.0f;
-	}
 
 	// Define elevation
-	circlePointCt = terrainInput(terrainInfo, circleVertices, circleColors);
+	circlePointCt = terrainInput(elevation, biomesInformation, circleVertices, circleColors);
+
+	vd = generateVoronoi(&setPoints, numberofPoints);
+	idx = VoronoiVerticesColors(vd, voronoiPoints, voronoiColors);
 
 
-	// Find water
-	//waterPtCt = findPotentialWaterSpots(thres, circleVertices, circleColors);
+
+	//fill in colors
+//	i = 0;
+//	while(i < numberofPoints * 3){
+//		setPointsColors[i++] = 0.0f;
+//		setPointsColors[i++] = 1.0f;
+//		setPointsColors[i++] = 0.0f;
+//	}
+
+	// Adjust voronoi points
+	adjustVoronoi(voronoiPoints, voronoiColors, elevation, circleColors, idx);
 
 	// Initialize shaders
 	initShadersVAOS();
@@ -378,13 +377,20 @@ void init(){
 void drawAll(int circlePointCt){
 	glBindVertexArray(circlesVao);
 	glDrawArrays(GL_POINTS, 0, circlePointCt);
-	glBindVertexArray(waterVao);
-	glDrawArrays(GL_POINTS, 0, waterPtCt);
-	glPointSize(2.0f);
-	glBindVertexArray(pointsVao);
-	glDrawArrays(GL_POINTS, 0, numberofPoints);
+//	glBindVertexArray(waterVao);
+//	glDrawArrays(GL_POINTS, 0, waterPtCt);
+//	glPointSize(2.0f);
+//	glBindVertexArray(pointsVao);
+//	glDrawArrays(GL_POINTS, 0, numberofPoints);
 	glBindVertexArray(voronoiVao);
-	glDrawArrays(GL_LINES, 0, idx / 3);
+	glPointSize(5.0f);
+//	glDrawArrays(GL_POLYGON, 0, idx / 3);
+	glDrawArrays(GL_TRIANGLES, 0, idx / 3);
+//	glDrawArrays(GL_LINES, 0, idx / 3);
+//	glDrawArrays(GL_POINTS, 0, idx / 3);
+//	glBindVertexArray(deaunayVao);
+//	glDrawArrays(GL_POINTS, 0, didx / 3);
+
 
 }
 
@@ -402,7 +408,7 @@ void display(){
 
 	/* Set the view matrix */
 	glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(islandX, islandY, islandZ));
-		viewMatrix = glm::rotate(translation, angle, glm::vec3(1.0f, 0.0f, 0.0f));
+	viewMatrix = glm::rotate(translation, angle, glm::vec3(1.0f, 0.0f, 0.0f));
 //	glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.0f, 0.0f, 0.0f));
 //	rotation = glm::rotate(rotation, roty, glm::vec3(0.0f, 1.0f, 0.0f));
 //	viewMatrix = glm::translate(rotation, glm::vec3(islandX, islandY, islandZ));
@@ -412,7 +418,7 @@ void display(){
 
 	/* Set the projection matrix */
 //	projMatrix = glm::perspective(glm::radians(45.0f), ( (float) windowWidth / windowHeight), 0.1f, 100.0f);
-	projMatrix = glm::perspective(glm::radians(45.0f), ( (float) 800 / windowHeight), 0.1f, 100.0f);
+	projMatrix = glm::perspective(glm::radians(45.0f), ( (float) windowWidth / windowHeight), 0.1f, 100.0f);
 
 	/* Send matrix to shader */
 	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
@@ -481,7 +487,7 @@ int main(int argc, char ** argv){
 	/* Initialize the GLUT window */
 	glutInit(&argc, argv);
 	glutInitWindowSize(windowWidth, windowHeight);
-	glutInitWindowPosition(30, 30);
+	glutInitWindowPosition(500, 500);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutCreateWindow("Points");
 

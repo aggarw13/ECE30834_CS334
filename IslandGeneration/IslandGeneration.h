@@ -10,8 +10,8 @@
 
 
 /* Window information */
-#define windowWidth 1600
-#define windowHeight 600
+#define windowWidth 1400
+#define windowHeight 1200
 #define ZPOS 0.8
 
 
@@ -48,14 +48,14 @@ enum Biome{
 	SUBTROPDESERT = 12,
 };
 void findCategory(double elevation, double moisture, int * category);
-void biomesGeneration(double * colors, double elevation[windowWidth][windowHeight], terrain *, int, double biomesInfo[windowWidth][windowHeight]);
+void biomesGeneration(double * colors, double elevation[windowWidth][windowHeight], terrain *, int, Biome biomesInfo[windowWidth][windowHeight]);
 
 
 
 
 #define elevDiffThreshold 0.3
 
-int terrainInput(terrain *, double *, double *);
+int terrainInput(double elevation[windowWidth][windowHeight], Biome b[windowWidth][windowHeight], double *, double *);
 // int findPotentialWaterSpots(double **, double **, terrain *);
 int findPotentialWaterSpots(double *, double *, terrain *);
 
@@ -105,7 +105,8 @@ typedef VD::Ccb_halfedge_circulator   Ccb_halfedge_circulator;
 
 // Voronoi functions and definitions
 VD generateVoronoi(double **, int);
-
+void adjustVoronoi(double * voronoiPositions, double * voronoiColors, double elevation[windowWidth][windowHeight], double * landColor, int idx);
+int VoronoiVerticesColors(VD vd, double * voronoiPoints, double * voronoiColors);
 
 
 #endif
