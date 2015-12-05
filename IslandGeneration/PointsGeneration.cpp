@@ -29,7 +29,8 @@ void generateRandomPoints(double ** setPoints, int numberofPoints){
     while(i < numberofPoints * 3){
     	(*setPoints)[i++] = normalize((rand() % (int) windowHeight) + 1, windowHeight);
     	(*setPoints)[i++] = normalize((rand() % (int) windowWidth) + 1, windowWidth);
-    	(*setPoints)[i++] = 0.0f;
+//    	(*setPoints)[i++] = 0.0f;
+    	(*setPoints)[i++] = ZPOS;
    	} 
 }
 
@@ -46,7 +47,8 @@ void generateSpiralPoints(double ** setPoints, int numberofPoints){
 		R += 2;
 		(*setPoints)[i++] = normalize(x, windowWidth);
 		(*setPoints)[i++] = normalize(y, windowHeight);
-		(*setPoints)[i++] = 0;
+//		(*setPoints)[i++] = 0;
+		(*setPoints)[i++] = ZPOS;
 	}
 }
 
@@ -62,7 +64,8 @@ void generateGridPoints(double ** setPoints, int numberofPoints){
 		for(c = squareSide / 2; c < windowWidth && i < numberofPoints * 3; c += squareSide){
 			(*setPoints)[i++] = normalize(c, windowWidth);
 			(*setPoints)[i++] = normalize(r, windowHeight);
-			(*setPoints)[i++] = 0.0f;
+//			(*setPoints)[i++] = 0.0f;
+			(*setPoints)[i++] = ZPOS;
 		}
 	}
 

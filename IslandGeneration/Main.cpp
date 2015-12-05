@@ -15,9 +15,15 @@
 
 #include <fstream>
 #include <string>
-//#include "GL/gl.h"
 
 #include "IslandGeneration.h"
+
+// GLM stuffs
+#include "glm/vec3.hpp"
+#include "glm/vec4.hpp"
+#include "glm/mat4x4.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 /* Circle buffers */
 GLuint vertexVbo; // circles
@@ -68,6 +74,31 @@ int numberofPoints = 1000;
 double setPointsColors[1000 * 3];
 Mode pointMode = Random; // Mode for points scattering
 
+// ************************* Island Location *************************** //
+double islandX = 0;
+double islandY = 0;
+double islandZ = -4.000000;
+double islandDelta = 0.5;
+
+/* #### Define variables for the camera here... */
+float tz = 0;
+float a = 0;
+float xmove = 0, ymove = 0, zmove = 0;
+float rotx = 0, roty = 0, rotz = 0;
+float rotationAngleX = 0.0;
+float rotationAngleY = 0.0;
+float resultx, resulty, resultz, movebackx, movebacky, movebackz;
+
+
+/* Field of view, aspect and near/far planes for the perspective projection */
+float fovy = 45.0;
+float aspect = windowWidth / windowHeight;
+float zNear = 1.0;
+float zFar = 100.0;
+int orthomod = 0;
+float dist = 0;
+
+
 // Voronoi
 double voronoiPoints[windowWidth * windowHeight * 3];
 double voronoiColors[windowWidth * windowHeight * 3];
@@ -76,8 +107,25 @@ int idx = 0; // idx for putting in points for voronoiPoints
 // Voronoi Object
 VD vd;
 
+
 // Elevation 2D Array
 terrain terrainInfo[windowHeight * windowWidth];
+
+/* The transformation matrices */
+glm::mat4 modelMatrix;
+glm::mat4 viewMatrix;
+glm::mat4 projMatrix;
+
+/* The location of the transformation matrices */
+GLint modelMatrixLocation;
+GLint viewMatrixLocation;
+GLint projMatrixLocation;
+
+/* Information of the rotation */
+float angle = 21.237171f;
+float angleStep = PI / 50.0f;
+
+
 
 int loadFile(char* filename, std::string& text)
 {
@@ -97,6 +145,17 @@ double normalize(int pos, int max){
 }
 
 void initShadersVAOS(){
+
+	// White color
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+
+	  glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glFrontFace(GL_CCW);
+
+
 	/* Initialize the vertex shader (generate, load, compile and check errors) */
 		loadFile("vertex.glsl", vertexShaderCode);
 		const char* vertexSource = vertexShaderCode.c_str();
@@ -221,19 +280,22 @@ void initShadersVAOS(){
 		glBindAttribLocation(shaderProgram, 1, "inColor");
 		glLinkProgram(shaderProgram);
 
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		gluOrtho2D(0.0, windowWidth, windowHeight, 0.0);
+		// MVP Matrices
+		/* Get the location of the uniform variables */
+		modelMatrixLocation = glGetUniformLocation(shaderProgram, "modelMatrix");
+		viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+		projMatrixLocation = glGetUniformLocation(shaderProgram, "projMatrix");
+
+
+//		glMatrixMode(GL_PROJECTION);
+//		glLoadIdentity();
+//		gluOrtho2D(0.0, windowWidth, windowHeight, 0.0);
 
 }
 
 void init(){
-	// White color
-	glClearColor(1.0, 1.0, 1.0, 0.0);
 
-	/* Enable the depth buffer */
-    glEnable(GL_DEPTH_TEST);
-    glEnable( GL_BLEND );
+
 
 //    glMatrixMode(GL_PROJECTION);
 //	glLoadIdentity();
@@ -266,10 +328,12 @@ void init(){
 			if(et->has_source() && et->has_target()){
 				voronoiPoints[idx++] = et->source()->point().x();
 				voronoiPoints[idx++] = et->source()->point().y();
-				voronoiPoints[idx++] = 0;
+//				voronoiPoints[idx++] = 0;
+				voronoiPoints[idx++] = ZPOS;
 				voronoiPoints[idx++] = et->target()->point().x();
 				voronoiPoints[idx++] = et->target()->point().y();
-				voronoiPoints[idx++] = 0;
+//				voronoiPoints[idx++] = 0;
+				voronoiPoints[idx++] = ZPOS;
 
 			}
 //			else {
@@ -328,23 +392,32 @@ void display(){
 	/* Clear the window */
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+	// ------------------------- MATRICES STUFF ____________ //
+
+
 	/* Draw the line */
 	/* Step 1: Enable the clients for the vertex arrays */
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-	/* Step 2a: Set up the array for the line and draw it */
+	/* Set the view matrix */
+	glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(islandX, islandY, islandZ));
+		viewMatrix = glm::rotate(translation, angle, glm::vec3(1.0f, 0.0f, 0.0f));
+//	glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.0f, 0.0f, 0.0f));
+//	rotation = glm::rotate(rotation, roty, glm::vec3(0.0f, 1.0f, 0.0f));
+//	viewMatrix = glm::translate(rotation, glm::vec3(islandX, islandY, islandZ));
 
-//	glPointSize(5.0);
-//	glVertexPointer(2, GL_FLOAT, 0, voronoiPoints);
-//	glColor3f(0.0, 0.0, 255.0);
-//	glDrawArrays(GL_LINES, 0, idx / 2);
-//
-//	glPointSize(5.0);
-//	glVertexPointer(2, GL_FLOAT, 0, setPoints);
-//	glColor3f(0.0, 255.0, 0.0);
-//	glDrawArrays(GL_POINTS, 0, numberofPoints);
+	/* Set the model matrix */
+	//modelMatrix = glm::scale(glm::mat4(1.0), glm::vec3(1.0));
 
+	/* Set the projection matrix */
+//	projMatrix = glm::perspective(glm::radians(45.0f), ( (float) windowWidth / windowHeight), 0.1f, 100.0f);
+	projMatrix = glm::perspective(glm::radians(45.0f), ( (float) 800 / windowHeight), 0.1f, 100.0f);
 
+	/* Send matrix to shader */
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+	glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, glm::value_ptr(projMatrix));
 
 
 	// Use vertex to draw intensity
@@ -384,6 +457,18 @@ void keyboard(unsigned char k, int x, int y)
 	else if(k == 'd'){
 		thres /= 2;
 	}
+	else if(k == 'u'){
+		angle += angleStep;
+	}
+	else if(k == 'w'){
+		islandZ += islandDelta;
+	}
+	else if(k == 's'){
+		islandZ -= islandDelta;
+	}
+	printf("angle: %f z: %f\n", angle, islandZ);
+
+
 }
 
 void freeStuffs(){
@@ -397,7 +482,7 @@ int main(int argc, char ** argv){
 	glutInit(&argc, argv);
 	glutInitWindowSize(windowWidth, windowHeight);
 	glutInitWindowPosition(30, 30);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutCreateWindow("Points");
 
 	/* Init GLEW */

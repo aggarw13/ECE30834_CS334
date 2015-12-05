@@ -49,7 +49,7 @@ int terrainInput(terrain * terrainArr, double * circleVertices, double * circleC
 		waterLocations[waterIdx].waterValue = 1.0f;
 	}
 
-	int circlesCt = 40;
+	int circlesCt = 10;
 	int circleIdx;
 	//terrain allIntensity[circlesCt] = {intensity1, intensity2, intensity3, intensity4, intensity5, intensity6};
 	terrain allIntensity[circlesCt];
@@ -122,7 +122,8 @@ int terrainInput(terrain * terrainArr, double * circleVertices, double * circleC
 //			circleColor[(i + 1) + j * windowWidth * 3] = 1.0f - elevation[xtemp][j];
 			circleColor[(i + 1) + j * windowWidth * 3] = (waterIntensity[xtemp][j] > 0) ? 0.0f : 1.0f - elevation[xtemp][j];
 
-			circleVertices[(i + 2) + j * windowWidth * 3] = 0.0f;
+//			circleVertices[(i + 2) + j * windowWidth * 3] = 0.0f;
+			circleVertices[(i + 2) + j * windowWidth * 3] = ZPOS - elevation[xtemp][j] + 0.1;
 
 			circleColor[(i + 2) + j * windowWidth * 3] = (waterIntensity[xtemp][j] > 0) ? waterIntensity[xtemp][j]: 1.0f - elevation[xtemp][j]; // BLUE value
 //			circleColor[(i + 2) + j * windowWidth * 3] = 1.0f - elevation[xtemp][j];

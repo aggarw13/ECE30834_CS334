@@ -11,6 +11,7 @@
 						<option id="gnu.cpp.compiler.option.optimization.level.1353550057" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
 						<option id="gnu.cpp.compiler.option.include.paths.1111403474" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 							<listOptionValue builtIn="false" value="/usr/local/include/CGAL"/>
+							<listOptionValue builtIn="false" value="/home/aimanuslim/Documents/graphics/IslandGeneration/glm"/>
 							<listOptionValue builtIn="false" value="/usr/local/include/GLFW"/>
 							<listOptionValue builtIn="false" value="GLEW"/>
 							<listOptionValue builtIn="false" value="/usr/include/CGAL"/>

@@ -10,8 +10,9 @@
 
 
 /* Window information */
-#define windowWidth 800
+#define windowWidth 1600
 #define windowHeight 600
+#define ZPOS 0.8
 
 
 // Points generation modes
