@@ -23,11 +23,7 @@ int main(int argc, char **argv)
 	//Test string generator
 	tree_generator generator(parser);
 	tuple3d base_location = tuple3d(0.0, 0.0, -5.0f);
-	
-	/*for (tuple3d base_loc : surface_normals)
-	{
 
-	}*/
 	//generator.setTreeBaseLocation(base_location);
 	generator.setBaseOrientation(base_location, tuple3d(0, 1, 0));
 	//generator.generateTree(parser->model_data->find(std::string("iterations"))->second));
@@ -39,6 +35,7 @@ int main(int argc, char **argv)
 	generator.generateTree(1);
 	generator.printTree();
 	generator.traverseGeneratedTree();
+	rend_obj->generateShaderInfo();
 	rend_obj->simThresh = 999;
 	rend_obj->iterations = parser->iterations;
 	
