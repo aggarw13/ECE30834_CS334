@@ -1,0 +1,18 @@
+In file included from tree_renderer.h:3:0,
+                 from glutCallBacks.h:2,
+                 from glutCallBacks.cpp:1:
+common_types.h:45:2: warning: ‘typedef’ was ignored in this declaration [enabled by default]
+ };
+  ^
+In file included from tree_renderer.h:3:0,
+                 from glutCallBacks.h:2,
+                 from glutCallBacks.cpp:1:
+common_types.h:128:2: warning: ‘typedef’ was ignored in this declaration [enabled by default]
+ };
+  ^
+In file included from glutCallBacks.h:2:0,
+                 from glutCallBacks.cpp:1:
+tree_renderer.h:22:3: error: a storage class can only be specified for objects and functions
+   };
+   ^
+make: *** [glutCallBacks.o] Error 1
