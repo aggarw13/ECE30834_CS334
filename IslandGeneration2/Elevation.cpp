@@ -61,7 +61,7 @@ int terrainInput(double elevation[IslandWidth][IslandHeight], Biome biomesInform
 		waterLocations[waterIdx].waterValue = 1.0f;
 	}
 
-	int circlesCt = 110;
+	int circlesCt = 30;
 	int circleIdx;
 	//terrain allIntensity[circlesCt] = {intensity1, intensity2, intensity3, intensity4, intensity5, intensity6};
 	terrain allIntensity[circlesCt];
@@ -79,7 +79,7 @@ int terrainInput(double elevation[IslandWidth][IslandHeight], Biome biomesInform
 	double theta = 0;
 	int vi = 0, coli = 0, i;
 	rmax = 400; // for circles
-	r = 100;
+	r = 300;
 
 	int x,y;
 	i = 0;
@@ -112,7 +112,7 @@ int terrainInput(double elevation[IslandWidth][IslandHeight], Biome biomesInform
 						myPow = 0.5;
 					}
 
-					elevation[x][y] +=  allIntensity[i].intensity * pow(1.0 - distFromCenter, myPow) * pow(1.0 - dIslandCtr, 2);
+					elevation[x][y] +=  allIntensity[i].intensity * pow(1.0 - distFromCenter, myPow) * pow(1.0 - dIslandCtr, 3);
 				}
 				else {
 					elevation[x][y] +=  0.0f;

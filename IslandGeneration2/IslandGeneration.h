@@ -11,9 +11,9 @@
 
 /* Island information */
 
-#define IslandWidth 1400
-#define IslandHeight 1200
-#define IslandRadius 600
+#define IslandWidth 2000
+#define IslandHeight 1800
+#define IslandRadius 900
 #define ZPOS 0.8
 
 

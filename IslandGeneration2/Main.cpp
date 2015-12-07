@@ -195,12 +195,8 @@ void initShadersVAOS(){
 	// White color
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 
-	  glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LESS);
-//		glEnable(GL_CULL_FACE);
-//		glCullFace(GL_BACK);
-//		glFrontFace(GL_CCW);
-
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 
 	/* Initialize the vertex shader (generate, load, compile and check errors) */
 		loadFile("vertex.glsl", vertexShaderCode);
@@ -651,7 +647,8 @@ void special(int key, int x, int y)
 int main(int argc, char ** argv){
 	/* Initialize the GLUT window */
 	glutInit(&argc, argv);
-	glutInitWindowSize(IslandWidth, IslandHeight);
+	//	glutInitWindowSize(IslandWidth, IslandHeight);
+       	glutInitWindowSize(800, 600);
 	glutInitWindowPosition(500, 500);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutCreateWindow("Points");
