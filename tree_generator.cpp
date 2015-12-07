@@ -64,7 +64,7 @@ vec3 tree_generator::generateRotation(TURTLE_AXIS axis,  vec3 currdir_pos, short
 	//return rot;
 	switch(axis)
 	{
-		case L : return glm::mat3(1, 0, 0, 0 , cos(parser->angle * sign * PI / 180), sin(parser->angle * -sign * PI / 180) , 0, -sin(parser->angle * sign * PI / 180), cos(parser->angle * -sign * PI / 180)) *  currdir_pos/*tuple3d(currdir_pos.x, curr_dir.y, -curr_dir.z).getVector()*/;
+		case L : return glm::mat3(1, 0, 0, 0 , cos(parser->angle * sign * PI / 180), sin(parser->angle * sign * PI / 180) , 0, -sin(parser->angle * sign * PI / 180), cos(parser->angle * sign * PI / 180)) *  currdir_pos/*tuple3d(currdir_pos.x, curr_dir.y, -curr_dir.z).getVector()*/;
 				break;
 		case H : return glm::mat3(cos(parser->angle * sign * PI / 180), 0, sin(parser->angle * sign * PI / 180), 0, 0, 0, -sin(parser->angle * sign * PI / 180), 0, cos(parser->angle * sign * PI / 180)) * currdir_pos;
 				break;
@@ -112,7 +112,7 @@ bool tree_generator::traverseGeneratedTree()
 	vertex = this->posStack->top().second.first;
 	for (std::string::size_type index = 0; index < this->currentTree.size(); index++)
 	{
-		//printf("Current String character : %c Direction : (%f,%f,%f) Unit dir : (%f, %f, %f)\n", this->currentTree[index], curr_dir.x,curr_dir.y,curr_dir.z, dir_pos.x, dir_pos.y, dir_pos.z);
+		printf("Current String character : %c Direction : (%f,%f,%f)\n", this->currentTree[index], curr_dir.x,curr_dir.y,curr_dir.z);
 		switch (this->currentTree[index])
 		{
 		case '+': curr_dir = this->generateRotation(U, curr_dir, 1); break;
@@ -157,7 +157,7 @@ bool tree_generator::traverseGeneratedTree()
 				vertex = { vertex.first + curr_dir.x * curr_len,
 							vertex.second + curr_dir.y * curr_len,
 							vertex.third + curr_dir.z * curr_len};
-				//printf("Vertex top (%f, %f, %f)\n", vertex.first, vertex.second, vertex.third);
+				printf("Vertex top (%f, %f, %f)\n", vertex.first, vertex.second, vertex.third);
 				posStack->push({ this->currentTree[index], {vertex, curr_dir} });
 			}
 			else

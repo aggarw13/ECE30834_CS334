@@ -27,6 +27,7 @@ tree_renderer::tree_renderer(tree_generator * generator)
 	yaw = 0.0;
 	pitch = 0.0;
 	translate_x = 0.0;
+	prevz_pos = -5.00;
 	translate_y = 0.0;
 	translate_z = 0.0;
 	//vertices = NULL;
@@ -89,7 +90,7 @@ void tree_renderer::generateArrays()
 tuple3d tree_renderer::calculateAngles(vec3 dir)
 {
 	tuple3d angles;
-	angles.first =  (180 * atan(dir.y / dir.z) / PI) /*180 * (atan(dir.y / dir.z) / PI + 1) : 180 * atan(dir.y / dir.z) / PI*/;
+	angles.first =  (180 * atan(dir.y / dir.z) / PI > 0)? 180 * (atan(dir.y / dir.z) / PI + 1) : 180 * atan(dir.y / dir.z) / PI;
 	angles.second = (180 * atan(dir.x / dir.z) / PI < 0)? 180 * (atan(dir.x / dir.z) / PI + 1) : 180 * atan(dir.x / dir.z) / PI;
 	angles.third = (180 * atan(dir.y / dir.x) / PI < 0 )? 180 * (atan(dir.y / dir.x) / PI + 1) : 180 * atan(dir.y / dir.x) / PI;
 	
@@ -112,10 +113,8 @@ void tree_renderer::display()
 		0.0, 0.0, 0.0,
 		0.0, 1.0, 0.0);
 
-	/* Load the model view matrix */
-	//glBegin(GL_LINES);
-	//glEnable(GL_LINE_SMOOTH);
-
+	glPushMatrix();
+	
 	/* Apply translation and rotation */
 	glTranslatef(1.0 + translate_x, -20.0 + translate_y, translate_z);
 	glRotatef(pitch, 1.0, 0.0, 0.0);
@@ -139,12 +138,12 @@ void tree_renderer::display()
 	glEnable(GL_POLYGON_SMOOTH);
 	glEnable(GL_POLYGON_SMOOTH_HINT);
 	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
-	
+	/*
 	glVertexPointer(3, GL_FLOAT, 0, vertices);
 	glColorPointer(3, GL_FLOAT, 0, colors);
 	glDrawArrays(GL_POLYGON, 0, 4);
 	
-	
+	*/
 	/*GLUquadricObj *quadratic = gluNewQuadric();
 	glPushMatrix();
 	glTranslatef(0.0, 0.0, 0.0);
@@ -163,7 +162,7 @@ void tree_renderer::display()
 	glPopMatrix();*/
 	
 	GLUquadricObj * tree_quad;
-
+	glPopMatrix();
 	for (part_model * part : this->parts_list)
 	{	
 		glPopMatrix();
@@ -175,7 +174,7 @@ void tree_renderer::display()
 		glLineWidth(part->getWidth());
 			float width_b = part->getWidth() / 10.0,
 			width_t = (part->getType() == LEAF)? 0 : width_b * generator->contract_w;
-	/*	vertices[0] = pos.first;
+		vertices[0] = pos.first;
 		vertices[1] = pos.second;
 		vertices[2] = pos.third;
 		vertices[3] = pos.first + part->getDir().first * part->getLength();
@@ -183,21 +182,27 @@ void tree_renderer::display()
 		vertices[5] = pos.third + part->getDir().third * part->getLength();
 		colors[0] = pcolors.first; colors[1] = pcolors.second; colors[2] = pcolors.third;
 		colors[3] = pcolors.first; colors[4] = pcolors.second; colors[5] = pcolors.third;
-	*/
-		glTranslatef(translate_x, translate_y, translate_z);
+	
+		//glTranslatef(translate_x, translate_y, translate_z);
 		glRotatef(pitch, 1.0f, 0.0f, 0.0f);
 		glRotatef(yaw, 0.0, 1.0f, 0.0f);
+		//if (part->getType() == LEAF)
+		glTranslatef(pos.first, pos.second, prevz_pos - pos.third);
+		//else
 		glTranslatef(pos.first, pos.second, pos.third);
 		//glRotatef(part->getAngle() * 180 /PI - 90, 0.0, 0.0, 1.0f);
-		glRotatef(90 - orient.third, 0.0f, 0.0f, 1.0f);
+		glRotatef(orient.third - 90, 0.0f, 0.0f, 1.0f);
 		//glRotatef(orient.second, 0.0f, 1.0f, 0.0f);
-		glRotatef(-90.0f + orient.first - 90, 1.0f, 0.0f, 0.0f);
+		glRotatef(orient.first, 1.0f, 0.0f, 0.0f);
 		//glTranslatef((pos.first + pos.first + cos(part->getAngle()) * part->getLength())/ 2.0f , (pos.second +  pos.second + sin(part->getAngle()) * part->getLength()) / 2.0f, pos.third);
 		gluQuadricDrawStyle(tree_quad, GLU_FILL);
 		glColor3f(pcolors.first, pcolors.second, pcolors.third);
 		//gluQuadricOrientation(quadratic, GL_)
 		gluCylinder(tree_quad, width_b, width_t, part->getLength(), 32, 32);
 		gluDeleteQuadric(tree_quad);
+		prevz_pos = pos.third + part->getDir().third * part->getLength();
+		glPopMatrix();
+	
 		//glVertexPointer(2, GL_FLOAT, 0, vertices);
 		//glColorPointer(3, GL_FLOAT, 0, colors);
 		//glDrawArrays(GL_LINES, 0, 2);
@@ -205,7 +210,7 @@ void tree_renderer::display()
 		if (firstRender)
 		{
 			char symbol = (part->getType() == BRANCH) ? 'F' : 'L';
-			printf("Line Vertices : (%f, %f, %f) (%f, %f, %f)  %f\n", vertices[0], vertices[1], vertices[2], vertices[3], vertices[4], vertices[5], part->getLength());
+			printf("Line Vertices : (%f, %f, %f) (%f, %f, %f)  %f\n", pos.first, pos.second, pos.third, vertices[3], vertices[4], vertices[5], part->getLength());
 			printf("Part : %c Angle with z axis : %f and Height : %f \n", symbol, orient.first, part->getLength());
 		}
 	}
