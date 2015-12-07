@@ -1,6 +1,7 @@
 #pragma once
 #include<iostream>
 #include"common_types.h"
+#include "GL/glew.h"
 #include "GL/glut.h"
 #include "glm/mat4x4.hpp"
 #include "part_model.h"
@@ -22,34 +23,42 @@ class tree_renderer
 		};
 		
 		list<pos> vertices_list;
-		float vertices[1000];
-		float colors[1000];
 		vector<part_model *> parts_list;
 		tree_generator * generator;
 		int treeVertexCount;
 		float pitch, yaw, translate_x, translate_y, translate_z;
+		float prevz_pos;
 		short simCounter;
 		
 		/************Shader Rendering Parameters****************/
-		///* The transformation matrices */
-		//GLuint * verticesVbo;
-		//GLuint * colorVbo;
-		//GLuint * modelVao;
+		//* The transformation matrices */
+		GLuint cylinderVerticesVbo;
+		GLuint coneVerticesVbo;
+		GLuint lineVerticesVbo;
+		GLuint colorVbo;
+		GLuint modelVao, lineVao;
+		GLfloat * cylinderVertices, * cylinderCoords, * cylinderNormals;
+		GLfloat * coneVertices, * coneCoords, * coneNormals;
+		GLfloat * lineVertices, * colors;
 
-		//glm::mat4 modelMatrix;
-		//glm::mat4 viewMatrix;
-		//glm::mat4 projMatrix;
+		int cylinderVerticesCount, coneVerticesCount, lineVerticesCount;
 
-		//GLuint vertexShader = 0;
-		//GLuint fragmentShader = 0;
-		//GLuint shaderProgram = 0;
+		glm::mat4 modelMatrix;
+		glm::mat4 viewMatrix;
+		glm::mat4 projMatrix;
 
-		///* The location of the transformation matrices */
-		//GLint modelMatrixLocation;
-		//GLint viewMatrixLocation;
-		//GLint projMatrixLocation;
+		GLuint vertexShader;
+		GLuint fragmentShader;
+		GLuint shaderProgram;
+
+		/* The location of the transformation matrices */
+		GLint modelMatrixLocation;
+		GLint viewMatrixLocation;
+		GLint projMatrixLocation;
 		
-		
+		std::string vertexShaderCode;
+		std::string fragmentShaderCode;
+
 		void clearPartsList();
 		void generateArrays();
 		tuple3d calculateAngles(vec3);
@@ -62,7 +71,7 @@ class tree_renderer
 		void init();
 		void idle();
 		void display();
-		void addVertex(float x, float y);
+		void generateShaderInfo();
 		void addModel(part_model * part);
 		void keyboard(unsigned char k, int x, int y);
 		void special(int key, int x, int y);

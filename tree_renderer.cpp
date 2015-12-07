@@ -30,6 +30,9 @@ tree_renderer::tree_renderer(tree_generator * generator)
 	prevz_pos = -5.00;
 	translate_y = 0.0;
 	translate_z = 0.0;
+	vertexShader = 0;
+	this->shaderProgram = 0;
+	fragmentShader = 0;
 	//vertices = NULL;
 	//colors = NULL;
 	/*Parameters of tree*/

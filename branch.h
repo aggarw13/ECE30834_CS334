@@ -19,7 +19,7 @@ public:
 		branch * model = new branch();
 		model->setParameters(length, width, 0.0);
 		model->setDirection(direction.x, direction.y, direction.z);
-		model->setPosition(pos.first, pos.second, 0.0);
+		model->setPosition(pos.first, pos.second, pos.third);
 		model->setColor(0.54, 0.27, 0.07);
 		return model;
 	}
