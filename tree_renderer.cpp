@@ -224,25 +224,31 @@ void tree_renderer::display()
 	}*/
 	firstRender = false;
 
-	/* Set the view matrix */
-	glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0));
-	viewMatrix = glm::rotate(translation, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	for (part_model * part : this->parts_list)
+	{
+		tuple3d orient = this->calculateAngles(part->getDir().getVector());
 
-	/* Set the model matrix */
-	//modelMatrix = glm::scale(glm::mat4(1.0), glm::vec3(1.0));
+		/* Set the view matrix */
+		glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(part->getBasePos().first, part->getBasePos().second, -part->getBasePos().third));
+		viewMatrix = glm::rotate(translation, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
-	/* Set the projection matrix */
-	projMatrix = glm::perspective(glm::radians(45.0f), float(600 / 800), 0.1f, 1000.0f);
+		/* Set the model matrix */
+		modelMatrix = glm::scale(glm::mat4(1.0), glm::vec3(1.0));
 
-	/* Send matrix to shader */
-	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-	glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, glm::value_ptr(projMatrix));
+		/* Set the projection matrix */
+		projMatrix = glm::perspective(glm::radians(45.0f), float(600 / 800), 0.1f, 100.0f);
 
-	glDrawArrays(GL_LINES, 0, lineVerticesCount);
-	glUseProgram(shaderProgram);
-	glBindVertexArray(lineVao);
+		/* Send matrix to shader */
+		glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+		glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, glm::value_ptr(projMatrix));
+		glUniform3f(colorLocation, part->getColor().first, part->getColor().second, part->getColor().third);
+		//glUniform3fv(colorLocation, 1, part->getColor().getVector());
+		glDrawArrays(GL_TRIANGLES, 0, cylinderVertexCount);
+		glUseProgram(shaderProgram);
+		glBindVertexArray(cylinderVao);
 
+	}
 	/*if (simCounter <= simThresh)
 		simCounter++;
 	
@@ -312,7 +318,6 @@ void tree_renderer::init()
 
 	//gluOrtho2D(0.0,800,600, 0.0);
 	std::ifstream ifs; std::string line = "", text = "";
-	
 
 	/* Initialize the vertex shader (generate, load, compile and check errors) */	
 	ifs.open("tree_vertex.glsl", std::ios::in);
@@ -321,8 +326,8 @@ void tree_renderer::init()
 		getline(ifs, line);
 		text += line + "\n";
 	}
-
-	const char* vertexSource = text.c_str();
+	
+	vertexSource = text.c_str();
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexSource, NULL);
 	glCompileShader(vertexShader);
@@ -334,6 +339,7 @@ void tree_renderer::init()
 		glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
 		std::cout << "Error while compiling the vertex shader: " << std::endl << buffer << std::endl;
 	}
+	
 
 	/* Initialize the fragment shader (generate, load, compile and check errors) */
 	ifs.open("tree_fragment.glsl", std::ios::in);
@@ -343,7 +349,7 @@ void tree_renderer::init()
 		text += line + "\n";
 	}
 
-	const char* fragmentSource = text.c_str();
+	fragmentSource = text.c_str();
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
 	glCompileShader(fragmentShader);
@@ -357,20 +363,19 @@ void tree_renderer::init()
 	}
 	
 	/* Load the information of the cylinder */
-	//load_obj_file("cylinder.obj", cylinderVertices, cylinderCoords, cylinderNormals, cylinderlVertexCount);
+	load_obj_file("cylinder.obj", cylinderVertices, cylinderCoords, cylinderNormals, cylinderVertexCount);
 
 	/* Load the information of the 3D cone */
-	//load_obj_file("cone.obj", coneVertices, coneCoords, coneNormals, conelVertexCount);
-
+	load_obj_file("cone.obj", coneVertices, coneCoords, coneNormals, coneVertexCount);
 
 	/* Initialize the Vertex Buffer Object for the vertices */
-	//glGenBuffers(1, &cylinderVerticesVbo);
-	//glBindBuffer(GL_ARRAY_BUFFER, cylinderVerticesVbo);
-	//glBufferData(GL_ARRAY_BUFFER, 3 * cylinderVerticesCount * sizeof(GLfloat), cylinderVertices, GL_STATIC_DRAW);
+	glGenBuffers(1, &cylinderVerticesVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, cylinderVerticesVbo);
+	glBufferData(GL_ARRAY_BUFFER, 3 * cylinderVertexCount * sizeof(GLfloat), cylinderVertices, GL_STATIC_DRAW);
 
-	//glGenBuffers(1, &coneVerticesVbo);
-	//glBindBuffer(GL_ARRAY_BUFFER, coneVerticesVbo);
-	//glBufferData(GL_ARRAY_BUFFER, 3 * coneVerticesCount * sizeof(GLfloat), coneVertices, GL_STATIC_DRAW);
+	glGenBuffers(1, &coneVerticesVbo);
+	glBindBuffer(GL_ARRAY_BUFFER, coneVerticesVbo);
+	glBufferData(GL_ARRAY_BUFFER, 3 * coneVertexCount * sizeof(GLfloat), coneVertices, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &lineVerticesVbo);
 	glBindBuffer(GL_ARRAY_BUFFER, lineVerticesVbo);
@@ -381,13 +386,23 @@ void tree_renderer::init()
 	glBufferData(GL_ARRAY_BUFFER, 3 * lineVerticesCount * sizeof(GLfloat), colors, GL_STATIC_DRAW);
 
 	/* Define the Vertex Array Object of the 3D model */
-	glGenVertexArrays(1, &lineVao);
+/*	glGenVertexArrays(1, &lineVao);
 	glBindVertexArray(lineVao);
 	glBindBuffer(GL_ARRAY_BUFFER, lineVerticesVbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glBindBuffer(GL_ARRAY_BUFFER, colorVbo);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+*/
+	glGenVertexArrays(1, &cylinderVao);
+	glBindVertexArray(cylinderVao);
+	glBindBuffer(GL_ARRAY_BUFFER, cylinderVerticesVbo);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	//glBindBuffer(GL_ARRAY_BUFFER, colorVbo);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(0);
+	//glEnableVertexAttribArray(1);
 
 	/* Initialize the shader program */
 	shaderProgram = glCreateProgram();
@@ -401,7 +416,7 @@ void tree_renderer::init()
 	modelMatrixLocation = glGetUniformLocation(shaderProgram, "modelMatrix");
 	viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 	projMatrixLocation = glGetUniformLocation(shaderProgram, "projMatrix");
-
+	colorLocation = glGetUniformLocation(shaderProgram, "inColor");
 	/* Set the shader program in the pipeline */
 	glUseProgram(shaderProgram);
 
@@ -419,21 +434,26 @@ void tree_renderer::generateShaderInfo()
 	{
 		vertex = part->getBasePos().getVector() + (part->getDir() * part->getLength()).getVector();
 
-		lineVertices[2 * vertex_no] = part->getBasePos().first;
-		lineVertices[2 * vertex_no + 1] = part->getBasePos().second;
-		lineVertices[2 * vertex_no + 2] = part->getBasePos().third;
+		printf("Line Vertices : (%f, %f, %f) (%f, %f, %f)  %f\n", part->getBasePos().first, part->getBasePos().second, part->getBasePos().third, vertex.x, vertex.y, vertex.z);
 
-		colors[2 * vertex_no] = part->getColor().first;
-		colors[2 * vertex_no + 1] = part->getColor().second;
-		colors[2 * vertex_no + 2] = part->getColor().third;
+		lineVertices[vertex_no++] = (part->getBasePos().first / WINDOW_W) * 2 - 1;
+		lineVertices[vertex_no++] = (part->getBasePos().second / WINDOW_H) * 2 - 1;
+		lineVertices[vertex_no++] = -0.5; // part->getBasePos().third;
 
-		lineVertices[2 * vertex_no + 3] = vertex.x;
-		lineVertices[2 * vertex_no + 4] = vertex.y;
-		lineVertices[2 * vertex_no + 5] = vertex.z;
+		colors[vertex_no - 3] = part->getColor().first;
+		colors[vertex_no - 2] = part->getColor().second;
+		colors[vertex_no - 1] = part->getColor().third;
 
-		colors[2 * vertex_no + 3] = part->getColor().first;
-		colors[2 * vertex_no + 4] = part->getColor().second;
-		colors[2 * vertex_no + 5] = part->getColor().third;
+		lineVertices[vertex_no++] = (vertex.x / WINDOW_W) * 2 - 1;
+		lineVertices[vertex_no++] = (vertex.y / WINDOW_H) * 2 - 1;
+		lineVertices[vertex_no++] = -0.5;// vertex.z;
+
+		colors[vertex_no - 3] = part->getColor().first;
+		colors[vertex_no - 2] = part->getColor().second;
+		colors[vertex_no - 1] = part->getColor().third;
+			
+		printf("Vertices position : (%f, %f, %f) (%f, %f, %f)", lineVertices[vertex_no - 6], lineVertices[vertex_no - 5], lineVertices[vertex_no - 4], lineVertices[vertex_no - 3], lineVertices[vertex_no - 2], lineVertices[vertex_no - 1]);
+	//	vertex_no++;
 	}
 
 	//printf("Co-ordinate : %f  %f\n", x, y);
