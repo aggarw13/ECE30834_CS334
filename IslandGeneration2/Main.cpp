@@ -12,6 +12,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <math.h>
+#include "grammar_parser.h"
+#include "tree_generator.h"
+#include "obj_parser.h"
 
 #include <fstream>
 #include <string>
@@ -91,6 +94,35 @@ bool IslandMode;
 double circleVertices[IslandWidth * IslandHeight * 3];
 glm::vec3 circleColors[IslandWidth][IslandHeight];
 int circlePointCt;
+
+// Tree
+std::string treevertexShaderCode;
+std::string treefragmentShaderCode;
+GLuint treevertexShader = 0;
+GLuint treefragmentShader = 0;
+GLuint treeshaderProgram = 0;
+
+double * TreeVertices;
+double * TreeColors;
+double * TreeCoords;
+double * TreeNormals;
+int TreeVerticesCount;
+tree_renderer * rend_obj;
+
+GLuint TreeVerticesVbo;
+GLuint TreeVao;
+GLint colorLocation;
+
+/* The transformation matrices */
+glm::mat4 treemodelMatrix;
+glm::mat4 treeviewMatrix;
+glm::mat4 treeprojMatrix;
+glm::mat4 treetranslation;
+
+/* The location of the transformation matrices */
+GLint treemodelMatrixLocation;
+GLint treeviewMatrixLocation;
+GLint treeprojMatrixLocation;
 
 // Map information
 double elevation[IslandWidth][IslandHeight] = {0};
@@ -207,69 +239,69 @@ void initShadersVAOS(){
 			std::cout << "Error while compiling the fragment shader: " << std::endl << buffer << std::endl;
 		}
 
-		/****************************************** Perlin Data VAO*********************************************/
+		/******************************************Tree Shaders*********************************************/
 
-//		glGenBuffers(1, &perlinVbo);
-//		glBindBuffer(GL_ARRAY_BUFFER, perlinVbo);
-//		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 * IslandWidth * IslandHeight, perlinArray, GL_STATIC_DRAW);
-//
-//		/* Initialize the Vertex Buffer Object for the colors of the vertices */
-//		glGenBuffers(1, &perlinColorsVbo);
-//		glBindBuffer(GL_ARRAY_BUFFER, perlinColorsVbo);
-//		glBufferData(GL_ARRAY_BUFFER, sizeof(perlinColors), perlinColors, GL_STATIC_DRAW);
-//
-//		/* Define the Vertex Array Object for the points */
-//		glGenVertexArrays(1, &perlinVao);
-//		glBindVertexArray(perlinVao);
-//		glBindBuffer(GL_ARRAY_BUFFER, perlinVbo);
-//		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
-//		glBindBuffer(GL_ARRAY_BUFFER, perlinColorsVbo);
-//		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
-//		glEnableVertexAttribArray(0);
-//		glEnableVertexAttribArray(1);
+		loadFile("tree_vertex.glsl", treevertexShaderCode);
+		const char* treevertexSource = treevertexShaderCode.c_str();
+		treevertexShader = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(treevertexShader, 1, &treevertexSource, NULL);
+		glCompileShader(treevertexShader);
+		GLint status = 0;
+		glGetShaderiv(treevertexShader, GL_COMPILE_STATUS, &status);
+		if(status != GL_TRUE)
+		{
+			char buffer[512];
+			glGetShaderInfoLog(treevertexShader, 512, NULL, buffer);
+			std::cout << "Error while compiling the tree vertex shader: " << std::endl << buffer << std::endl;
+		}
 
-		/******************************************Points Data VAO*********************************************/
-//		glGenBuffers(1, &pointsVbo);
-//		glBindBuffer(GL_ARRAY_BUFFER, pointsVbo);
-//		glBufferData(GL_ARRAY_BUFFER, numberofPoints * 3 * sizeof(double), setPoints, GL_STATIC_DRAW);
-//
-//		/* Initialize the Vertex Buffer Object for the colors of the vertices */
-//		glGenBuffers(1, &pointsColorsVbo);
-//		glBindBuffer(GL_ARRAY_BUFFER, pointsColorsVbo);
-//		glBufferData(GL_ARRAY_BUFFER, sizeof(setPointsColors), setPointsColors, GL_STATIC_DRAW);
-//
-//		/* Define the Vertex Array Object for the points */
-//		glGenVertexArrays(1, &pointsVao);
-//		glBindVertexArray(pointsVao);
-//		glBindBuffer(GL_ARRAY_BUFFER, pointsVbo);
-//		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
-//		glBindBuffer(GL_ARRAY_BUFFER, pointsColorsVbo);
-//		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
-//		glEnableVertexAttribArray(0);
-//		glEnableVertexAttribArray(1);
+		/* Initialize the fragment shader (generate, load, compile and check errors) */
+		loadFile("tree_fragment.glsl", treefragmentShaderCode);
+		const char* treefragmentSource = treefragmentShaderCode.c_str();
+		treefragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(treefragmentShader, 1, &treefragmentSource, NULL);
+		glCompileShader(treefragmentShader);
+		status = 0;
+		glGetShaderiv(treefragmentShader, GL_COMPILE_STATUS, &status);
+		if(status != GL_TRUE)
+		{
+			char buffer[512];
+			glGetShaderInfoLog(treefragmentShader, 512, NULL, buffer);
+			std::cout << "Error while compiling the tree fragment shader: " << std::endl << buffer << std::endl;
+		}
 
 
-		/******************************************Circle Data VAO*********************************************/
-//		/* Initialize the Vertex Buffer Object for the location of the vertices */
-//		glGenBuffers(1, &vertexVbo);
-//		glBindBuffer(GL_ARRAY_BUFFER, vertexVbo);
-//		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * circlePointCt * 3, circleVertices, GL_STATIC_DRAW);
-//
-//		/* Initialize the Vertex Buffer Object for the colors of the vertices */
-//		glGenBuffers(1, &colorVbo);
-//		glBindBuffer(GL_ARRAY_BUFFER, colorVbo);
-//		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * circlePointCt * 3, NULL, GL_STATIC_DRAW);
-//
-//		/* Define the Vertex Array Object for the circles */
-//		glGenVertexArrays(1, &circlesVao);
-//		glBindVertexArray(circlesVao);
-//		glBindBuffer(GL_ARRAY_BUFFER, vertexVbo);
-//		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
-//		glBindBuffer(GL_ARRAY_BUFFER, colorVbo);
-//		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
-//		glEnableVertexAttribArray(0);
-//		glEnableVertexAttribArray(1);
 
+
+		/******************************************Tree Data VAO*********************************************/
+
+		load_obj_file("cylinder.obj", TreeVertices, TreeCoords, TreeNormals, TreeVerticesCount);
+
+		glGenBuffers(1, &TreeVerticesVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, TreeVerticesVbo);
+		glBufferData(GL_ARRAY_BUFFER, 3 * TreeVerticesCount * sizeof(GLfloat), TreeVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+
+
+		/* Define the Vertex Array Object of the 3D model */
+		glGenVertexArrays(1, &TreeVao);
+		glBindVertexArray(TreeVao);
+		glBindBuffer(GL_ARRAY_BUFFER, TreeVerticesVbo);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glEnableVertexAttribArray(0);
+
+		/* Initialize the shader program */
+		treeshaderProgram = glCreateProgram();
+		glAttachShader(treeshaderProgram, treevertexShader);
+		glAttachShader(treeshaderProgram, treefragmentShader);
+		glBindAttribLocation(treeshaderProgram, 0, "inPoint");
+		//glBindAttribLocation(shaderProgram, 1, "inColor");
+		glLinkProgram(treeshaderProgram);
+
+		treemodelMatrixLocation = glGetUniformLocation(treeshaderProgram, "modelMatrix");
+		treeviewMatrixLocation = glGetUniformLocation(treeshaderProgram, "viewMatrix");
+		treeprojMatrixLocation = glGetUniformLocation(treeshaderProgram, "projMatrix");
+		colorLocation = glGetUniformLocation(treeshaderProgram, "inColor");
 
 		/******************************************Voronoi Data VAO*********************************************/
 		glGenBuffers(1, &voronoiVbo);
@@ -365,6 +397,8 @@ void initShadersVAOS(){
 		normalDataLocation = glGetUniformLocation(shaderProgram, "normalData");
 
 
+
+
 //		glMatrixMode(GL_PROJECTION);
 //		glLoadIdentity();
 //		gluOrtho2D(0.0, IslandWidth, IslandHeight, 0.0);
@@ -402,6 +436,11 @@ void init(){
 
 	// Find normals
 	voronoiNormals = findNormals(voronoiVertices, idx);
+
+
+	rend_obj = initTree();
+
+
 
 	// Initialize shaders
 	initShadersVAOS();
@@ -442,6 +481,7 @@ void drawAll(int circlePointCt){
 
 }
 
+
 void display(){
 	/* Clear the window */
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -454,10 +494,18 @@ void display(){
 	/* Step 1: Enable the clients for the vertex arrays */
 	glEnableClientState(GL_VERTEX_ARRAY);
 
+
+
 	/* Set the view matrix */
 	translation = glm::translate(glm::mat4(1.0f), glm::vec3(islandX, islandY, islandZ));
 	viewMatrix = glm::rotate(translation, angle, glm::vec3(1.0f, 0.0f, 0.0f));
 	viewMatrix = glm::rotate(viewMatrix, rotate, glm::vec3(0.0f, 0.0f, 1.0f));
+
+	drawTree(treeshaderProgram, TreeVao, TreeVerticesCount, rend_obj,
+			translation, modelMatrix, viewMatrix,projMatrix,
+			treemodelMatrixLocation, treeviewMatrixLocation, treeprojMatrixLocation,
+			colorLocation, voronoiVertices, voronoiNormals
+			);
 
 	/* Set the model matrix */
 	//modelMatrix = glm::scale(glm::mat4(1.0), glm::vec3(1.0));
@@ -465,7 +513,7 @@ void display(){
 	/* Set the projection matrix */
 //	projMatrix = glm::perspective(glm::radians(45.0f), ( (float) IslandWidth / IslandHeight), 0.1f, 100.0f);
 	projMatrix = glm::perspective(glm::radians(45.0f), ( (float) IslandWidth / IslandHeight), 0.1f, 100.0f);
-
+ree
 	/* Send matrix to shader */
 	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));

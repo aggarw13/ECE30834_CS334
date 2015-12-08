@@ -112,4 +112,14 @@ int VoronoiVerticesColors(VD vd, int ** voronoiPoints, double ** voronoiColors);
 double * findCoords(int **, int);
 double * findNormals(double * voronoiVertices, int vmax);
 
+//Tree (for tree.cpp)
+tree_renderer initTree();
+//void buildTrees(double * voronoiVertices, int idx, tree_renderer * rend_obj)
+void drawTree(
+		int shaderProgram, GLuint TreeVao, int treeVCount, tree_renderer * rend_obj,
+		glm::mat4 translation, glm::mat4 modelMatrix, glm::mat4 viewMatrix, glm::mat4 projMatrix,
+		GLint modelMatrixLocation, GLint viewMatrixLocation, GLint projMatrixLocation,
+		GLint colorLocation, double *, double *
+);
+
 #endif

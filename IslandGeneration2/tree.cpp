@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include "grammar_parser.h"
 #include "tree_generator.h"
-#include "glutCallBacks.h"
 #include "obj_parser.h"
+#include "glutCallBacks.h"
+#include "IslandGeneration.h"
 
 // GLM stuffs
 #include "glm/vec3.hpp"
@@ -14,10 +15,10 @@
 #include "glm/gtc/type_ptr.hpp"
 
 /* The transformation matrices */
-glm::mat4 modelMatrix;
-glm::mat4 viewMatrix;
-glm::mat4 projMatrix;
-glm::mat4 translation;
+//glm::mat4 modelMatrix;
+//glm::mat4 viewMatrix;
+//glm::mat4 projMatrix;
+//glm::mat4 translation;
 
 #define WINDOW_W  800
 #define WINDOW_H  600
@@ -33,10 +34,10 @@ GLuint fragmentShader;
 GLuint shaderProgram;
 
 /* The location of the transformation matrices */
-GLint modelMatrixLocation;
-GLint viewMatrixLocation;
-GLint projMatrixLocation;
-GLint colorLocation;
+//GLint modelMatrixLocation;
+//GLint viewMatrixLocation;
+//GLint projMatrixLocation;
+//GLint colorLocation;
 
 std::string vertexShaderCode;
 std::string fragmentShaderCode;
@@ -66,26 +67,44 @@ tuple3d calculateAngles(vec3 dir, tuple3d base)
 	return angles;
 }
 
-void display()
+//void display()
+void drawTree(
+		int shaderProgram, GLuint TreeVao, int treeVCount, tree_renderer * rend_obj,
+		glm::mat4 translation, glm::mat4 modelMatrix, glm::mat4 viewMatrix, glm::mat4 projMatrix,
+		GLint modelMatrixLocation, GLint viewMatrixLocation, GLint projMatrixLocation,
+		GLint colorLocation, double * basePos, double * normals
+)
 {
 	/* Clear the window */
-	glClear(GL_COLOR_BUFFER_BIT);
+//	glClear(GL_COLOR_BUFFER_BIT);
+
+	glUseProgram(shaderProgram);
+	glBindVertexArray(TreeVao);
+
 
 	tuple3d mid_point, orient;
-	glm::mat4 world_translation = glm::translate(glm::mat4(1.0f), vec3(1.0 + rend_obj->translate_x, -20.0 + rend_obj->translate_y, rend_obj->translate_z));
-	glm::mat4 world_rotation = glm::rotate(world_translation, float((rend_obj->pitch) * PI/ 180), glm::vec3(1.0f, 0.0f, 0.0f));
-	world_rotation = glm::rotate(world_rotation, float((rend_obj->yaw) * PI / 180), glm::vec3(0.0f, 1.0f, 0.0f));
-
+//	glm::mat4 world_translation = glm::translate(glm::mat4(1.0f), vec3(1.0 + rend_obj->translate_x, -20.0 + rend_obj->translate_y, rend_obj->translate_z));
+//	glm::mat4 world_translation = translation;
+//	glm::mat4 world_rotation = glm::rotate(world_translation, float((rend_obj->pitch) * PI/ 180), glm::vec3(1.0f, 0.0f, 0.0f));
+//	world_rotation = glm::rotate(world_rotation, float((rend_obj->yaw) * PI / 180), glm::vec3(0.0f, 1.0f, 0.0f));
+	int i;
+	tuple3d base_location;
+	tuple3d normal_vector;
 	for (part_model * part : rend_obj->parts_list)
 	{
+		base_location = tuple3d(basePos[i], basePos[i + 1], basePos[i + 2]);
+		normal_vector = tuple3d(normals[i], normals[i + 1], normals[i + 2]);
+		rend_obj->generator->setBaseOrientation(base_location, normal_vector);
+		rend_obj->generator->traverseGeneratedTree();
+
 		//mid_point = (part->getBasePos() + part->getDir() * part->getLength()) / 2.0f;
 		orient = calculateAngles(part->getDir().getVector(), part->getBasePos());
 
 		/* Set the view matrix */
-		translation = glm::translate(world_rotation, part->getBasePos().getVector());
-		//viewMatrix = glm::rotate(world_rotation, -orient.first, glm::vec3(1.0, 0.0, 0.0));
+//		translation = glm::translate(world_rotation, part->getBasePos().getVector());
+		translation = glm::translate(viewMatrix, part->getBasePos().getVector());
 		//if (part->getType() == LEAF)
-			viewMatrix = glm::rotate(translation, orient.first, glm::vec3(1.0, 0.0, 0.0));
+		viewMatrix = glm::rotate(translation, orient.first, glm::vec3(1.0, 0.0, 0.0));
 		//else
 			//viewMatrix = glm::rotate(translation, 0.0f, glm::vec3(1.0, 0.0, 0.0));
 
@@ -103,25 +122,24 @@ void display()
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));
 		glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, glm::value_ptr(projMatrix));
 		glUniform3f(colorLocation, part->getColor().first, part->getColor().second, part->getColor().third);
-		glBindVertexArray(cylinderVao);
-		glDrawArrays(GL_POLYGON, 0, cylinderVerticesCount);
+		glDrawArrays(GL_POLYGON, 0, treeVCount);
 
-		if (firstRender)
-		{
-			char symbol = (part->getType() == BRANCH) ? 'F' : 'L';
-			printf("Line Vertices : (%f, %f, %f) (%f, %f, %f)\n", part->getBasePos().first, part->getBasePos().second, part->getBasePos().third, part->getDir().first, part->getDir().second, part->getDir().third);
-			printf("Part : %c Angle with z axis : %f and Height : %f \n", symbol, orient.first * 180 / PI, part->getLength());
-		}
+//		if (firstRender)
+//		{
+//			char symbol = (part->getType() == BRANCH) ? 'F' : 'L';
+//			printf("Line Vertices : (%f, %f, %f) (%f, %f, %f)\n", part->getBasePos().first, part->getBasePos().second, part->getBasePos().third, part->getDir().first, part->getDir().second, part->getDir().third);
+//			printf("Part : %c Angle with z axis : %f and Height : %f \n", symbol, orient.first * 180 / PI, part->getLength());
+//		}
 
 	}
 
-	firstRender = false;
-	//	if (simCounter <= simThresh)
-		//		simCounter++;
-	glFlush();
-
-	/* Swap buffers for animation */
-	glutSwapBuffers();
+//	firstRender = false;
+//	//	if (simCounter <= simThresh)
+//		//		simCounter++;
+//	glFlush();
+//
+//	/* Swap buffers for animation */
+//	glutSwapBuffers();
 }
 
 
@@ -228,8 +246,17 @@ void init() {
 
 }
 
-int main(int argc, char **argv)
-{
+//void buildTrees(double * voronoiVertices, int idx, tree_renderer * rend_obj){
+//	int i;
+//	while(i < idx){
+//		rend_obj->generator->curr_basePoint.first = voronoiVertices[i++];
+//		rend_obj->generator->curr_basePoint.second = voronoiVertices[i++];
+//		rend_obj->generator->curr_basePoint.third = voronoiVertices[i++];
+//
+//	}
+//}
+
+tree_renderer initTree(){
 	/**********************Data Input from Island Map**************/
 	/*float elevation[WINDOW_H][WINDOW_W];
 	float tree_count;
@@ -243,10 +270,10 @@ int main(int argc, char **argv)
 	//Test string generator
 	tree_generator generator;
 	generator.setParser(parser);
-	tuple3d base_location = tuple3d(0.0, 0.0, -5.0f);
+//	tuple3d base_location = tuple3d(0.0, 0.0, -5.0f);
 
 	//generator.setTreeBaseLocation(base_location);
-	generator.setBaseOrientation(base_location, tuple3d(0, 1, 0));
+//	generator.setBaseOrientation(base_location, tuple3d(0, 1, 0));
 	//generator.generateTree(parser->model_data->find(std::string("iterations"))->second));
 	//_sleep(10000);
 
@@ -255,41 +282,75 @@ int main(int argc, char **argv)
 	generator.setRenderer(rend_obj);
 	generator.generateTree(4);
 	generator.printTree();
-	generator.traverseGeneratedTree();
+//	generator.traverseGeneratedTree();
 	//rend_obj->generateShaderInfo(lineVertices, colors, &lineVerticesCount);
 	rend_obj->simThresh = 999;
 	rend_obj->iterations = parser->iterations;
-
-	//Defining renderer pointer
-	glutCallBacks::renderer = rend_obj;
-
-	//Initlaizing Glut Window
-	/* Initialize the GLUT window */
-	glutInit(&argc, argv);
-	glutInitWindowSize(WINDOW_W, WINDOW_H);
-	glutInitWindowPosition(30, 30);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-	auto windowID = glutCreateWindow("Rendered Test Tree");
-
-	/* Init GLEW */
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
-		/* Problem: glewInit failed, something is seriously wrong. */
-		std::cout << "Error: " << glewGetErrorString(err) << std::endl;
-	}
-	std::cout << "GLEW version: " << glewGetString(GLEW_VERSION) << std::endl;
-
-	/* Set OpenGL initial state */
-	init();
-
-	/* Callback functions */
-	glutDisplayFunc(display);
-	glutIdleFunc(glutCallBacks::idle);
-	glutKeyboardFunc(glutCallBacks::keyboardHandler);
-	glutMouseFunc(glutCallBacks::mouseHandler);
-	glutSpecialFunc(glutCallBacks::specialFunc);
-	/* Start the main GLUT loop */
-	/* NOTE: No code runs after this */
-	glutMainLoop();
+	return rend_obj;
 }
+//
+//int main(int argc, char **argv)
+//{
+//	/**********************Data Input from Island Map**************/
+//	/*float elevation[WINDOW_H][WINDOW_W];
+//	float tree_count;
+//	float colors[WINDOW_H][WINDOW_W], surface_normals[WINDOW_H][WINDOW_W];
+//	*/
+//	//Test parser
+//	grammar_parser * parser(new grammar_parser(std::string("test_grammar.txt")));
+//	parser->parseFile();
+//
+//
+//	//Test string generator
+//	tree_generator generator;
+//	generator.setParser(parser);
+//	tuple3d base_location = tuple3d(0.0, 0.0, -5.0f);
+//
+//	//generator.setTreeBaseLocation(base_location);
+//	generator.setBaseOrientation(base_location, tuple3d(0, 1, 0));
+//	//generator.generateTree(parser->model_data->find(std::string("iterations"))->second));
+//	//_sleep(10000);
+//
+//	//Instantiate Renderer
+//	rend_obj = new tree_renderer(&generator);
+//	generator.setRenderer(rend_obj);
+//	generator.generateTree(4);
+//	generator.printTree();
+//	generator.traverseGeneratedTree();
+//	//rend_obj->generateShaderInfo(lineVertices, colors, &lineVerticesCount);
+//	rend_obj->simThresh = 999;
+//	rend_obj->iterations = parser->iterations;
+//
+//	//Defining renderer pointer
+//	glutCallBacks::renderer = rend_obj;
+//
+//	//Initlaizing Glut Window
+//	/* Initialize the GLUT window */
+//	glutInit(&argc, argv);
+//	glutInitWindowSize(WINDOW_W, WINDOW_H);
+//	glutInitWindowPosition(30, 30);
+//	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+//	auto windowID = glutCreateWindow("Rendered Test Tree");
+//
+//	/* Init GLEW */
+//	GLenum err = glewInit();
+//	if (GLEW_OK != err)
+//	{
+//		/* Problem: glewInit failed, something is seriously wrong. */
+//		std::cout << "Error: " << glewGetErrorString(err) << std::endl;
+//	}
+//	std::cout << "GLEW version: " << glewGetString(GLEW_VERSION) << std::endl;
+//
+//	/* Set OpenGL initial state */
+//	init();
+//
+//	/* Callback functions */
+//	glutDisplayFunc(display);
+//	glutIdleFunc(glutCallBacks::idle);
+//	glutKeyboardFunc(glutCallBacks::keyboardHandler);
+//	glutMouseFunc(glutCallBacks::mouseHandler);
+//	glutSpecialFunc(glutCallBacks::specialFunc);
+//	/* Start the main GLUT loop */
+//	/* NOTE: No code runs after this */
+//	glutMainLoop();
+//}
