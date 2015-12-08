@@ -11,8 +11,9 @@
 
 /* Island information */
 
+
 #define IslandWidth 2000
-#define IslandHeight 1800
+#define IslandHeight 2000
 #define IslandRadius 900
 #define ZPOS 0.8
 
@@ -21,7 +22,7 @@
 enum Mode {Random=1, Spiral=2, Grid=3};
 
 // Main
-int inputter(enum Mode *);
+bool inputter(enum Mode *);
 
 #include "glm/vec3.hpp"
 
@@ -52,13 +53,13 @@ enum Biome{
 };
 void findCategory(double elevation, double moisture, int * category);
 //void biomesGeneration(double * colors, double elevation[IslandWidth][IslandHeight], terrain *, int, Biome biomesInfo[IslandWidth][IslandHeight]);
-void biomesGeneration(glm::vec3 colors[IslandWidth][IslandHeight], double elevation[IslandWidth][IslandHeight], terrain * waterLocations, int waterCt, Biome biomesInfo[IslandWidth][IslandHeight]);
+void biomesGeneration(glm::vec3 colors[IslandWidth][IslandHeight], double elevation[IslandWidth][IslandHeight], terrain * waterLocations, int waterCt, Biome biomesInfo[IslandWidth][IslandHeight], bool);
 
 
 
 #define elevDiffThreshold 0.3
 
-int terrainInput(double elevation[IslandWidth][IslandHeight], Biome biomesInformation[IslandWidth][IslandHeight], double * circleVertices, glm::vec3 circleColor[IslandWidth][IslandHeight], glm::vec3 perlinOffsets[IslandWidth][IslandHeight]);
+int terrainInput(double elevation[IslandWidth][IslandHeight], Biome biomesInformation[IslandWidth][IslandHeight], double * circleVertices, glm::vec3 circleColor[IslandWidth][IslandHeight], glm::vec3 perlinOffsets[IslandWidth][IslandHeight], Mode, bool);
 
 // Utilities
 double normalize(int, int);

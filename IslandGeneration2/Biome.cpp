@@ -46,21 +46,21 @@ double elevationZoneDiv = (double) 1 / 4;
 double moistureZoneDiv = (double) 1 / 6;
 int category[2] = {0, 0};
 double maxElevation = 0;
+double minElevation = 50;
 
 void findCategory(double elevation, double moisture, int * category){
-	double  highThreshold = 0.6;
+	double  highThreshold = 0.7;
 	elevationZoneDiv = highThreshold / 4.0f;
 
-//	if((elevation / maxElevation) < (1.0f * elevationZoneDiv)){
 	if((elevation / highThreshold) < (1.0f * elevationZoneDiv)){
 		(category)[0] = 0;
 	}
-//	else if((elevation / maxElevation) < (2.0f * elevationZoneDiv))
+
 	else if((elevation / highThreshold) < (2.0f * elevationZoneDiv))
 	{
 		(category)[0] = 1;
 	}
-//	else if((elevation / maxElevation) < (3.0f * elevationZoneDiv)){
+
 	else if((elevation / highThreshold) < (3.0f * elevationZoneDiv)){
 		(category)[0] = 2;
 	} else {
@@ -87,32 +87,30 @@ void findCategory(double elevation, double moisture, int * category){
 	else {
 		(category)[1] = 5;
 	}
-//	if((elevation / maxElevation) > (3 * elevationZoneDiv)){
-//		printf("Elevation: %.3f, idx=%d Moisture: %.3f, idx=%d\n", elevation, category[0], moisture, category[1]);
-//	}
+
 }
 
 
-void biomesGeneration(glm::vec3 colors[IslandWidth][IslandHeight], double elevation[IslandWidth][IslandHeight], terrain * waterLocations, int waterCt, Biome biomesInfo[IslandWidth][IslandHeight]){
+void biomesGeneration(glm::vec3 colors[IslandWidth][IslandHeight], double elevation[IslandWidth][IslandHeight], terrain * waterLocations, int waterCt, Biome biomesInfo[IslandWidth][IslandHeight], bool IslandMode){
 	int x, y, xidx, waterIdx;
 	double r, g, b;
 	int maxrad = 1000, rad;
 
 	maxElevation = 0.0;
+	minElevation = 50;
 	for(y = 0; y < IslandHeight; y++){
 			for(x = 0; x < IslandWidth; x++){
-				if(maxElevation < elevation[x][y]){ maxElevation = elevation[x][y];}
+				if(minElevation > elevation[x][y]){ minElevation = elevation[x][y];}
 			}
 	}
 
-//	printf("Max elevation: %f\n", maxElevation);
+	printf("Min elevation: %f\n", minElevation);
 
 	PerlinNoise pn;
 	float n;
 	double moisture, distFromCenter;
 	for(y = 0; y < IslandHeight; y++){
 		for(x = 0; x < IslandWidth; x++){
-//			xidx = x / 3;
 			xidx = x;
 
 			moisture = 0;
@@ -128,15 +126,10 @@ void biomesGeneration(glm::vec3 colors[IslandWidth][IslandHeight], double elevat
 				if(moisture > 1.0){moisture = 1.0f;}
 				if(moisture < 0.0){moisture = 0.0f;}
 			}
-//			printf("Elevation at (%d, %d): %f\n", xidx, y, elevation[xidx][y]);
-//			printf("Moisture at (%d, %d): %f\n", xidx, y, moisture);
-			//			moisture *= 0.6;
-//			moisture *= 0.3;
+
 
 			// find category
 			findCategory(elevation[xidx][y], moisture, category);
-			//printf(" %f ", elevation[x][y]);
-			// use category to index into biomeTable
 			Biome thisBiome = biomeTable[category[0]][category[1]];
 			biomesInfo[xidx][y] = thisBiome;
 
@@ -145,16 +138,6 @@ void biomesGeneration(glm::vec3 colors[IslandWidth][IslandHeight], double elevat
 			r = (double) biomeColors[thisBiome][0] / 255;
 			g = (double) biomeColors[thisBiome][1] / 255;
 			b = (double) biomeColors[thisBiome][2] / 255;
-//			r = (double) biomeColors[TROPRAINF][0] / 255;
-//			g = (double) biomeColors[TROPRAINF][1] / 255;
-//			b = (double) biomeColors[TROPRAINF][2] / 255;
-
-
-//			switch(thisBiom)
-//				printf("Elevation: %.3f, Moisture: %.3f -> SNOW\n", elevation[xidx][y], moisture);
-
-
-
 //
 //			switch(thisBiome){
 //				case TROPRAINF: printf("Elevation: %.3f, Moisture: %.3f -> TROPRAINF idx: e: %d m: %d\n", elevation[xidx][y], moisture, category[0], category[1]); break;
@@ -171,9 +154,6 @@ void biomesGeneration(glm::vec3 colors[IslandWidth][IslandHeight], double elevat
 //				case SNOW:printf("Elevation: %.3f, Moisture: %.3f -> SNOW idx: e: %d m: %d\n", elevation[xidx][y], moisture, category[0], category[1]); break;
 //				case TEMPDESERT: printf("Elevation: %.3f, Moisture: %.3f -> TEMPDESERT idx: e: %d m: %d\n", elevation[xidx][y], moisture, category[0], category[1]); break;
 //			}
-
-//			if(moisture < 5 * moistureZoneDiv){ g *= 1.1;}
-//			else{ b *= 1.5; }
 
 
 			// change colors
@@ -192,37 +172,19 @@ void biomesGeneration(glm::vec3 colors[IslandWidth][IslandHeight], double elevat
 
 
 //			if(x % 3 == 0){
-				colors[x][y].r = ((moisture > 0.8) && (elevation[xidx][y] == 0.00000000000000000000000f) ) ? 0.0f : r * 0.8;
-				colors[x][y].g = ((moisture > 0.8) && (elevation[xidx][y] == 0.00000000000000000000000f) ) ? 0.0f : g * 0.8;
-				colors[x][y].b = ((moisture > 0.8) && (elevation[xidx][y] == 0.00000000000000000000000f) ) ? moisture - 0.5 : b * 0.8;
-				if(distanceFromCtr > (IslandRadius + n)){
-					colors[x][y].r = 0;
-					colors[x][y].g = 0;
-					colors[x][y].b = 0.4;
+//				colors[x][y].r = ((moisture > 0.8) && (elevation[xidx][y] == 0.00000000000000000000000f) ) ? 0.0f : r * 0.8;
+//				colors[x][y].g = ((moisture > 0.8) && (elevation[xidx][y] == 0.00000000000000000000000f) ) ? 0.0f : g * 0.8;
+//				colors[x][y].b = ((moisture > 0.8) && (elevation[xidx][y] == 0.00000000000000000000000f) ) ? moisture - 0.5 : b * 0.8;
+				colors[x][y].r = ((moisture > 0.8) && (elevation[xidx][y] < (minElevation + 0.005) ) ) ? 0.0f : r * 0.8;
+				colors[x][y].g = ((moisture > 0.8) && (elevation[xidx][y] < (minElevation + 0.005) ) ) ? 0.0f : g * 0.8;
+				colors[x][y].b = ((moisture > 0.8) && (elevation[xidx][y] < (minElevation + 0.005) ) ) ? moisture - 0.5 : b * 0.8;
+				if(IslandMode){
+					if(distanceFromCtr > (IslandRadius + n)){
+						colors[x][y].r = 0;
+						colors[x][y].g = 0;
+						colors[x][y].b = 0.4;
+					}
 				}
-
-//				colors[(x + 0) + y * IslandWidth * 3] = ((moisture > 0.8) && (elevation[xidx][y] == 0.00000000000000000000000f)) ? 0.0f : r * 0.8;
-
-//				colors[(x + 1) + y * IslandWidth * 3] = ((moisture > 0.6) && (elevation[xidx][y] < ((double) 1.0 / pow(10, 6)))) ? 0.0f : g * 0.8;
-//				colors[(x + 1) + y * IslandWidth * 3] = ((moisture > 0.8) && (elevation[xidx][y] == 0.00000000000000000000000f)) ? 0.0f : g * 0.8;
-
-
-//				colors[(x + 2) + y * IslandWidth * 3] = ((moisture > 0.8) && (elevation[xidx][y] == 0.00000000000000000000000f)) ? moisture - 0.5 : b * 0.8;
-				if(((elevation[xidx][y] != 0.0000000000000000000f))){
-//					printf("Non zero Elevation: %0.8lf\n", elevation[xidx][y]);
-				}
-//				colors[(x + 2) + y * IslandWidth * 3] *= 2;
-
-//				if(colors[(x + 0) + y * IslandWidth * 3] > 1.0){colors[(x + 0) + y * IslandWidth * 3] = 1.0;}
-//				if(colors[(x + 1) + y * IslandWidth * 3] > 1.0){colors[(x + 1) + y * IslandWidth * 3] = 1.0;}
-//				if(colors[(x + 2) + y * IslandWidth * 3] > 1.0){colors[(x + 2) + y * IslandWidth * 3] = 1.0;}
-
-//				if(thisBiome == SUBTROPDESERT){
-//							colors[(x + 0) + y * IslandWidth * 3] = r * 0.9;
-//							colors[(x + 1) + y * IslandWidth * 3] = g * 0.9;
-//							colors[(x + 2) + y * IslandWidth * 3] = b * 0.9;
-//						}
-//			}
 
 		}
 	}

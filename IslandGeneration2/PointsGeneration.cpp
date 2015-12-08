@@ -10,15 +10,20 @@
 
 using namespace std;
 
-int inputter(enum Mode * pointMode){
-	int m, numberofPoints;
-	cout<< "Enter number of points: ";
- 	cin >> numberofPoints;
+bool inputter(enum Mode * pointMode){
+	int m;
  	cout<< "Enter point generation mode (Random=1, Spiral=2, Grid=3): ";
  	cin >> m;
  	*pointMode = (enum Mode) m;
- 	cout << endl;
- 	return numberofPoints;
+ 	bool IslandMode = false;
+ 	int t;
+// 	cout<< "Island mode? (1 or 0): ";
+// 	cin >> t;
+// 	if(t){IslandMode = true;}
+// 	return IslandMode;
+ 	return false;
+
+
 }
 
 void generateRandomPoints(int ** setPoints, int numberofPoints){
@@ -42,14 +47,16 @@ void generateSpiralPoints(int ** setPoints, int numberofPoints){
 	double theta; // theta is in radians
 	int i = 0;
 	int xcent, ycent;
-	xcent = rand() % (int) IslandWidth + 1;
-	ycent = rand() % (int) IslandHeight + 1;
+//	xcent = rand() % (int) IslandWidth + 1;
+//	ycent = rand() % (int) IslandHeight + 1;
+	xcent = IslandWidth /2;
+	ycent = IslandHeight /2;
  	*setPoints = (int *) malloc(sizeof(int) * numberofPoints * 3);
-	x = 0; y = 0; R = 50;
+	x = 0; y = 0; R = 10;
 	for(theta = 0; i + 1 < numberofPoints * 3; theta += (PI / DELTA)){
 		x = R * cos(theta) + xcent;
 		y = R * sin(theta) + ycent;
-		R += 10;
+		R += 5;
 		//    	(*setPoints)[i++] = normalize((rand() % (int) IslandHeight) + 1, IslandHeight);
 		    	(*setPoints)[i++] = (int) x;
 		//    	(*setPoints)[i++] = normalize((rand() % (int) IslandWidth) + 1, IslandWidth);
