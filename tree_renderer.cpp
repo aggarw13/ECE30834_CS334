@@ -27,7 +27,6 @@ tree_renderer::tree_renderer(tree_generator * generator)
 	yaw = 0.0;
 	pitch = 0.0;
 	translate_x = 0.0;
-	prevz_pos = -5.00;
 	translate_y = 0.0;
 	translate_z = 0.0;
 	vertexShader = 0;
@@ -229,11 +228,12 @@ void tree_renderer::display()
 		tuple3d orient = this->calculateAngles(part->getDir().getVector());
 
 		/* Set the view matrix */
-		glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(part->getBasePos().first, part->getBasePos().second, -part->getBasePos().third));
-		viewMatrix = glm::rotate(translation, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	//part->getBasePos().first, part->getBasePos().second, -part->getBasePos().third
+		glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -10.0));
+		viewMatrix = glm::rotate(translation, 30.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		/* Set the model matrix */
-		modelMatrix = glm::scale(glm::mat4(1.0), glm::vec3(1.0));
+		modelMatrix = glm::scale(glm::mat4(1.0), glm::vec3(0.05));
 
 		/* Set the projection matrix */
 		projMatrix = glm::perspective(glm::radians(45.0f), float(600 / 800), 0.1f, 100.0f);
@@ -242,12 +242,12 @@ void tree_renderer::display()
 		glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));
 		glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, glm::value_ptr(projMatrix));
+		//glUniform3f(colorLocation, part->getColor().first, part->getColor().second, part->getColor().third);
 		glUniform3f(colorLocation, part->getColor().first, part->getColor().second, part->getColor().third);
 		//glUniform3fv(colorLocation, 1, part->getColor().getVector());
-		glDrawArrays(GL_TRIANGLES, 0, cylinderVertexCount);
 		glUseProgram(shaderProgram);
 		glBindVertexArray(cylinderVao);
-
+		glDrawArrays(GL_TRIANGLES, 0, cylinderVertexCount);		
 	}
 	/*if (simCounter <= simThresh)
 		simCounter++;
@@ -312,7 +312,7 @@ void tree_renderer::special(int key, int x, int y)
 void tree_renderer::init()
 {
 	/* Set clear color */
-	glClearColor(1.0, 1.0, 1.0, 1.0);
+	glClearColor(0.0, 0.0, 0.0, 1.0);
 
 	/* Set 2D orthogonal projection */
 
@@ -422,11 +422,11 @@ void tree_renderer::init()
 
 }
 
-void tree_renderer::generateShaderInfo()
+void tree_renderer::generateShaderInfo(GLfloat * lineVertices, GLfloat * colors, GLint * lineVerticesCount)
 {
-	lineVerticesCount = this->parts_list.size() * 2;
-	lineVertices = new GLfloat[lineVerticesCount * 3];
-	colors = new GLfloat[lineVerticesCount * 3];
+	*lineVerticesCount = this->parts_list.size() * 2;
+	lineVertices = new GLfloat[*lineVerticesCount * 3];
+	colors = new GLfloat[*lineVerticesCount * 3];
 	int vertex_no = 0;
 	vec3 vertex;
 
@@ -434,7 +434,7 @@ void tree_renderer::generateShaderInfo()
 	{
 		vertex = part->getBasePos().getVector() + (part->getDir() * part->getLength()).getVector();
 
-		printf("Line Vertices : (%f, %f, %f) (%f, %f, %f)  %f\n", part->getBasePos().first, part->getBasePos().second, part->getBasePos().third, vertex.x, vertex.y, vertex.z);
+		//printf("Line Vertices : (%f, %f, %f) (%f, %f, %f)  %f\n", part->getBasePos().first, part->getBasePos().second, part->getBasePos().third, vertex.x, vertex.y, vertex.z);
 
 		lineVertices[vertex_no++] = (part->getBasePos().first / WINDOW_W) * 2 - 1;
 		lineVertices[vertex_no++] = (part->getBasePos().second / WINDOW_H) * 2 - 1;
@@ -452,7 +452,7 @@ void tree_renderer::generateShaderInfo()
 		colors[vertex_no - 2] = part->getColor().second;
 		colors[vertex_no - 1] = part->getColor().third;
 			
-		printf("Vertices position : (%f, %f, %f) (%f, %f, %f)", lineVertices[vertex_no - 6], lineVertices[vertex_no - 5], lineVertices[vertex_no - 4], lineVertices[vertex_no - 3], lineVertices[vertex_no - 2], lineVertices[vertex_no - 1]);
+		//printf("Vertices position : (%f, %f, %f) (%f, %f, %f)", lineVertices[vertex_no - 6], lineVertices[vertex_no - 5], lineVertices[vertex_no - 4], lineVertices[vertex_no - 3], lineVertices[vertex_no - 2], lineVertices[vertex_no - 1]);
 	//	vertex_no++;
 	}
 

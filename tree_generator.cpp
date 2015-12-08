@@ -10,15 +10,23 @@ unsigned short leaf::length = 15;
 unsigned short branch::count = 0;
 unsigned short branch::length = 30;
 
-tree_generator::tree_generator(grammar_parser * parser)
+tree_generator::tree_generator()
 {
-	this->parser = parser;
+	this->parser = NULL;
 	//rule_trees = new map<string, TreeNode *>();
-	this->currentTree = this->parser->start_symb;
+	this->currentTree = "";
 	this->posStack = new stack<std::pair<char,pos_orient>>();
 	//this->renderer = renderer;
 	frameCount = 0;
 	this->currAngle = PI / 2.0;
+}
+
+void tree_generator::setParser(grammar_parser * parser)
+{
+	this->parser = parser;
+	this->currentTree = parser->start_symb;
+	printf("Current start_symbol %d\n", this->currentTree.size());
+
 }
 
 void tree_generator::setRenderer(tree_renderer * renderer)
@@ -109,6 +117,7 @@ bool tree_generator::traverseGeneratedTree()
 	vec3 dir_pos; 
 	this->posStack->push({ 'B', {this->curr_basePoint, this->base_dir } });
 
+	printf("Obtained curren tree %s\n", this->currentTree.c_str());
 	vertex = this->posStack->top().second.first;
 	for (std::string::size_type index = 0; index < this->currentTree.size(); index++)
 	{
@@ -142,8 +151,7 @@ bool tree_generator::traverseGeneratedTree()
 			part = (this->currentTree[index] == 'F') ? PART_TYPE::BRANCH : PART_TYPE::LEAF;
 			if (collides = this->checkCollision(vertex.getVector(), (tuple3d(curr_dir) * curr_len).getVector() , part))
 			{
-				register;
-				//printf("Enters line registeration \n");
+
 				this->tree_vectors.push_back(vec_lines(vertex.getVector(), curr_dir, part));
 				if (this->currentTree[index] == 'F')
 				{
