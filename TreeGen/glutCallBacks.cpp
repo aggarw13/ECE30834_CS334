@@ -7,10 +7,6 @@ glutCallBacks::glutCallBacks()
 {
 }
 
-void glutCallBacks::displayTree()
-{
-	glutCallBacks::renderer->display();
-}
 
 void glutCallBacks::idle()
 {

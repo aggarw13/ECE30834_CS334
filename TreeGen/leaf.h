@@ -19,7 +19,7 @@ public:
 		leaf * model = new leaf();
 		model->setParameters(length, width, 0.0f);
 		model->setDirection(dir.x,dir.y,dir.z);
-		model->setPosition(pos.first, pos.second, 0.0);
+		model->setPosition(pos.first, pos.second, pos.third);
 		model->setColor(0, 1.0, 0.0);
 		return model;
 	}

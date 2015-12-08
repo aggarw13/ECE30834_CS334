@@ -6,7 +6,7 @@ grammar_parser::grammar_parser(std::string input_file)
 {
 	this->model_data = new std::map<string, float>();
 	rules = new std::map<string, string>();
-	fp = ifstream(input_file.c_str());
+	ifstream fp(input_file.c_str());
 	if (fp)
 	{
 		grammar = "";
@@ -16,6 +16,7 @@ grammar_parser::grammar_parser(std::string input_file)
 		while (!fp.eof())
 		{
 			getline(fp, line);
+	  
 			if (std::regex_search(line, std::regex("Production Rules")))
 				rules_flag = true;
 			if (!line.empty())
@@ -29,35 +30,51 @@ grammar_parser::grammar_parser(std::string input_file)
 	}
 	else
 		printf("Invalid file");
-	}
+	this->angle = 20;
+	this->start_symb = std::string("L");
+	this->iterations = 1;
+	this->axioms.push_back(std::string("L"));
+	this->axioms.push_back(std::string("F"));
+	this->rules->insert( std::pair<string, string>(std::string("L"),  std::string("FFL")));
+	this->model_data->insert(std::pair <string, float >(std::string("iterations"), this->iterations));
+	this->model_data->insert(std::pair <string, float >(std::string("angle"), this->angle));
+	this->model_data->insert(std::pair <string, float >(std::string("diameter_ratio"), 0.75));
+	this->model_data->insert(std::pair <string, float >(std::string("contraction_ratio"), 0.8));
+	this->model_data->insert(std::pair <string, float >(std::string("branch_h"), 3));
+	this->model_data->insert(std::pair <string, float >(std::string("branch_w"), 0.5));
+	this->model_data->insert(std::pair <string, float >(std::string("leaf_w"), 0.5));
+	this->model_data->insert(std::pair <string, float >(std::string("leaf_h"), 2));
+	printf("Initialized %f", this->model_data->find(std::string("branch_h"))->second);
+
+}
 
 void grammar_parser::parseFile()
 {
 	if (grammar.size() > 0)
 	{
-		std::regex meta_data ("Meta Information(.*)Alphabets");
-		std::regex alphabets ("Alphabets(.*)Starting");
-		std::regex starting_symb ("Starting Symbol(.*)Production Rules");
-		std::regex rules_regex ("Production Rules\\s(.*)");
+		std::regex meta_data ("Meta Information(.*)Alphabets", std::regex_constants::extended);
+		std::regex alphabets ("Alphabets(.*)Starting", std::regex_constants::extended);
+		std::regex starting_symb ("Starting Symbol(.*)Production Rules", std::regex_constants::extended);
+		std::regex rules_regex ("Production Rules(.*)", std::regex_constants::extended);
 		std::smatch match;
 		std::string substring;
-		//printf("Read grammar content : %s", grammar.c_str());
+		printf("Read grammar content : %s", grammar.c_str());
 		//Parse Meta Information
 
 		if (std::regex_search(grammar, match, meta_data))
 		{
 			substring = match.str(1);
 			printf("\ngrammar : %s \nMatched substring : %s\n", grammar.c_str(), substring.c_str());
-			meta_data = std::regex("(\\w{1,})\\s(\\d+[\.]?[\\d]*)");
+			meta_data = std::regex("(\\w{1,})\\s(\\d+[\\.]?[\\d]*)");
 			while (std::regex_search(substring, match, meta_data))
 			{
-				//printf("\nMatched string pattern for meta information : %s\n", match.str().c_str());
+				printf("\nMatched string pattern for meta information : %s\n", match.str().c_str());
 				//_sleep(1000);
 				if (match.str(1) == "iterations")
 					iterations = atoi((match).str(2).c_str());
 				else if (match.str(1) == "angle")
 				{
-					//printf("Enters angle recignition\n");
+					printf("Enters angle recignition\n");
 					angle = atof(match.str(2).c_str());
 				}
 				else
@@ -71,12 +88,12 @@ void grammar_parser::parseFile()
 		//Alphabets
 		if (std::regex_search(grammar, match, alphabets))
 		{
-			//printf("Matched string pattern for alphabets : %s\n", match.str().c_str());
+			printf("Matched string pattern for alphabets : %s\n", match.str().c_str());
 			substring = match.str(1);
 			alphabets = std::regex("\\w{1}");
 			while(std::regex_search(substring, match, alphabets))
 			{
-				//printf("Matched alphabets : %s\n", match.str().c_str());
+				printf("Matched alphabets : %s\n", match.str().c_str());
 				//_sleep(1000);
 				this->axioms.push_back(match.str());
 				substring = match.suffix().str();
@@ -86,7 +103,7 @@ void grammar_parser::parseFile()
 		//Starting Symbol
 		if (std::regex_search(grammar, match, starting_symb))
 		{
-			//printf("Matched string pattern for starting symbol : %s\n", match.str(1).c_str());
+			printf("Matched string pattern for starting symbol : %s\n", match.str(1).c_str());
 			if (match.size() > 0)
 				this->start_symb = match.str(1);
 		}
@@ -94,9 +111,10 @@ void grammar_parser::parseFile()
 		//Production rules
 		if (std::regex_search(grammar, match, rules_regex))
 		{
+
 			printf("Matched string pattern for rules : %s\n", match.str().c_str());
 			substring = match.str(0);
-			rules_regex = std::regex("(\\w+)\\s->\\s([\\w+&^\\\+-\\[\\]]+)");
+			rules_regex = std::regex("(\\w+)\\s->\\s([\\w+&^\\\\+-\\[\\]]+)");
 			while(std::regex_search(substring, match, rules_regex))
 			{
 
