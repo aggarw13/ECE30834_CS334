@@ -29,6 +29,7 @@ double * adjustVoronoi(int ** voronoiPositions, double ** voronoiColors, double 
 	*voronoiColors =  (double *) calloc( idx,  sizeof(double) );
 	resVorPos =  (double *) calloc( idx,  sizeof(double) );
 	double maxElev = 0;
+	double elevThresh = 0.4;
 
 	PerlinNoise pn;
 	double n;
@@ -43,8 +44,6 @@ double * adjustVoronoi(int ** voronoiPositions, double ** voronoiColors, double 
 
 
 	while(i < idx){
-//		x = (int) ( ( (double) ((*voronoiPositions)[i] + 1.0f) / 2.0f)     * IslandWidth);
-//		y = (int) ( ( (double) ((*voronoiPositions)[i + 1] + 1.0f) / 2.0f) * IslandHeight);
 		x = (*voronoiPositions)[i];
 		y = (*voronoiPositions)[i + 1];
 		loc.x = x;
@@ -68,7 +67,9 @@ double * adjustVoronoi(int ** voronoiPositions, double ** voronoiColors, double 
 			currHeight = elevation[x][y];
 			if(maxElev < currHeight){ maxElev = currHeight ; }
 //			(*voronoiPositions)[i + 2] = -currHeight;
-			resVorPos[i + 2] = (distanceFromCtr < (IslandRadius + n)) ? -currHeight:0.0f;
+//			resVorPos[i + 2] = (distanceFromCtr < (IslandRadius + n)) ? -currHeight:0.0f;
+			resVorPos[i + 2] = -currHeight;
+			if(resVorPos[i + 2] > elevThresh){ resVorPos[i + 2] = elevThresh; }
 //			printf("Voronoi pos: (%d, %d) E: %f\n", x, y, resVorPos[i + 2]);
 
 //			*voronoiColors =  (double *) realloc((*voronoiColors), (i+ 3) *  sizeof(double) );
@@ -85,10 +86,20 @@ double * adjustVoronoi(int ** voronoiPositions, double ** voronoiColors, double 
 //			}
 
 		} else{
-			if(x < 0){ resVorPos[i] = -1; }
-			else { resVorPos[i] = 1; }
-			if(y < 0){ resVorPos[i + 1] = -1; }
-			else { resVorPos[i + 1] = 1; }
+			if(x < 0){
+				resVorPos[i] = -1;
+			}
+
+			if(x >= IslandWidth){
+				resVorPos[i] = 1;
+			}
+			if(y < 0){
+				resVorPos[i + 1] = -1;
+			}
+
+			if(y >= IslandHeight){
+				resVorPos[i + 1] = 1;
+			}
 			resVorPos[i + 2] = 0;
 		}
 

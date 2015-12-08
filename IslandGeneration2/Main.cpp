@@ -27,7 +27,7 @@
 #include "glm/gtc/type_ptr.hpp"
 
 /* Circle buffers */
-GLuint vertexVbo; // circles
+GLuint vertexVbo; // mountainPoints
 GLuint colorVbo; // circles
 GLuint circlesVao;
 
@@ -67,7 +67,7 @@ GLuint fragmentShader = 0;
 GLuint shaderProgram = 0;
 
 /* Information about the texture */
-const char* textureFile = "blue.jpg";
+const char* textureFile = "water_blue.jpg";
 unsigned char* textureData;
 GLint textureDataLocation;
 int textureWidth;
@@ -82,56 +82,35 @@ int normalWidth;
 int normalHeight;
 int normalComp;
 
+bool IslandMode;
+
 // Water
-//double waterVertices[IslandWidth * IslandHeight * 3] = {0};
-//double waterColors [IslandWidth * IslandHeight * 3] = {0};
-double * waterVertices = NULL;
-double * waterColors = NULL;
-int waterPtCt;
-double thres = 0.0005;
+
 
 // Circle
 double circleVertices[IslandWidth * IslandHeight * 3];
-//double circleColors[IslandWidth * IslandHeight * 3];
 glm::vec3 circleColors[IslandWidth][IslandHeight];
 int circlePointCt;
+
+// Map information
 double elevation[IslandWidth][IslandHeight] = {0};
 Biome biomesInformation[IslandWidth][IslandHeight];
 
 // Points
 int * setPoints;
-int numberofPoints = 8000;
-double setPointsColors[1000 * 3];
+int numberofPoints = 5000;
+//double setPointsColors[1000 * 3];
 Mode pointMode = Random; // Mode for points scattering
 
 // Noise
 glm::vec3 perlinOffsets[IslandWidth][IslandHeight];
-double *perlinArray;//[IslandWidth * IslandHeight * 3];
+double *perlinArray;
 
 // ************************* Island Location *************************** //
 double islandX = 0;
 double islandY = 0;
 double islandZ = -4.000000;
 double islandDelta = 0.5;
-
-/* #### Define variables for the camera here... */
-float tz = 0;
-float a = 0;
-float xmove = 0, ymove = 0, zmove = 0;
-float rotx = 0, roty = 0, rotz = 0;
-float rotationAngleX = 0.0;
-float rotationAngleY = 0.0;
-float resultx, resulty, resultz, movebackx, movebacky, movebackz;
-
-
-/* Field of view, aspect and near/far planes for the perspective projection */
-float fovy = 45.0;
-float aspect = IslandWidth / IslandHeight;
-float zNear = 1.0;
-float zFar = 100.0;
-int orthomod = 0;
-float dist = 0;
-
 
 // Voronoi
 //double voronoiPoints[IslandWidth * IslandHeight * 3] = {0};
@@ -250,44 +229,25 @@ void initShadersVAOS(){
 //		glEnableVertexAttribArray(1);
 
 		/******************************************Points Data VAO*********************************************/
-		glGenBuffers(1, &pointsVbo);
-		glBindBuffer(GL_ARRAY_BUFFER, pointsVbo);
-		glBufferData(GL_ARRAY_BUFFER, numberofPoints * 3 * sizeof(double), setPoints, GL_STATIC_DRAW);
+//		glGenBuffers(1, &pointsVbo);
+//		glBindBuffer(GL_ARRAY_BUFFER, pointsVbo);
+//		glBufferData(GL_ARRAY_BUFFER, numberofPoints * 3 * sizeof(double), setPoints, GL_STATIC_DRAW);
+//
+//		/* Initialize the Vertex Buffer Object for the colors of the vertices */
+//		glGenBuffers(1, &pointsColorsVbo);
+//		glBindBuffer(GL_ARRAY_BUFFER, pointsColorsVbo);
+//		glBufferData(GL_ARRAY_BUFFER, sizeof(setPointsColors), setPointsColors, GL_STATIC_DRAW);
+//
+//		/* Define the Vertex Array Object for the points */
+//		glGenVertexArrays(1, &pointsVao);
+//		glBindVertexArray(pointsVao);
+//		glBindBuffer(GL_ARRAY_BUFFER, pointsVbo);
+//		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
+//		glBindBuffer(GL_ARRAY_BUFFER, pointsColorsVbo);
+//		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
+//		glEnableVertexAttribArray(0);
+//		glEnableVertexAttribArray(1);
 
-		/* Initialize the Vertex Buffer Object for the colors of the vertices */
-		glGenBuffers(1, &pointsColorsVbo);
-		glBindBuffer(GL_ARRAY_BUFFER, pointsColorsVbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(setPointsColors), setPointsColors, GL_STATIC_DRAW);
-
-		/* Define the Vertex Array Object for the points */
-		glGenVertexArrays(1, &pointsVao);
-		glBindVertexArray(pointsVao);
-		glBindBuffer(GL_ARRAY_BUFFER, pointsVbo);
-		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
-		glBindBuffer(GL_ARRAY_BUFFER, pointsColorsVbo);
-		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-
-		/******************************************Water Data VAO*********************************************/
-		glGenBuffers(1, &waterVbo);
-		glBindBuffer(GL_ARRAY_BUFFER, waterVbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 * waterPtCt, waterVertices, GL_STATIC_DRAW);
-
-		/* Initialize the Vertex Buffer Object for the colors of the vertices */
-		glGenBuffers(1, &waterColorsVbo);
-		glBindBuffer(GL_ARRAY_BUFFER, waterColorsVbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 *  waterPtCt, waterColors, GL_STATIC_DRAW);
-
-		/* Define the Vertex Array Object for the points */
-		glGenVertexArrays(1, &waterVao);
-		glBindVertexArray(waterVao);
-		glBindBuffer(GL_ARRAY_BUFFER, waterVbo);
-		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
-		glBindBuffer(GL_ARRAY_BUFFER, waterColorsVbo);
-		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
 
 		/******************************************Circle Data VAO*********************************************/
 //		/* Initialize the Vertex Buffer Object for the location of the vertices */
@@ -309,9 +269,6 @@ void initShadersVAOS(){
 //		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, NULL);
 //		glEnableVertexAttribArray(0);
 //		glEnableVertexAttribArray(1);
-
-
-
 
 
 		/******************************************Voronoi Data VAO*********************************************/
@@ -423,41 +380,19 @@ void init(){
 //	gluOrtho2D(0.0, IslandWidth, IslandHeight, 0.0);
 
 	// Call random point generator
-	// numberofPoints = inputter(&pointMode);
-	switch(pointMode){
-		case Spiral:
-			generateSpiralPoints(&setPoints, numberofPoints);
-			break;
-		case Random:
-			generateRandomPoints(&setPoints, numberofPoints);
-			break;
-		case Grid:
-			generateGridPoints(&setPoints, numberofPoints);
-			break;
-		default: break;
-	}
+	IslandMode = inputter(&pointMode);
+	generateRandomPoints(&setPoints, numberofPoints);
 
 	vd = generateVoronoi(&setPoints, numberofPoints);
 
 
 	// Define elevation
-	// * circleVertices arent drawn
-	circlePointCt = terrainInput(elevation, biomesInformation, circleVertices, circleColors, perlinOffsets);
+	circlePointCt = terrainInput(elevation, biomesInformation, circleVertices, circleColors, perlinOffsets, pointMode, IslandMode);
+
 	perlinArray = convertToArray(perlinOffsets);
+
 	idx = VoronoiVerticesColors(vd, &voronoiPoints, &voronoiColors);
 
-
-
-
-
-
-	//fill in colors
-//	i = 0;
-//	while(i < numberofPoints * 3){
-//		setPointsColors[i++] = 0.0f;
-//		setPointsColors[i++] = 1.0f;
-//		setPointsColors[i++] = 0.0f;
-//	}
 
 	// Adjust voronoi points
 	voronoiVertices = adjustVoronoi(&voronoiPoints, &voronoiColors, elevation, circleColors, idx);
@@ -591,31 +526,22 @@ void keyboard(unsigned char k, int x, int y)
 	{
 		exit(0);
 	}
-	else if(k == 'd'){
-		thres /= 2;
+	if(k == 'w'){
+		islandY += 0.5;
 	}
-	else if(k == 'u'){
-		angle += angleStep;
+	if(k == 's'){
+		islandY -= 0.5;
 	}
-	else if(k == 'w'){
-		islandZ += islandDelta;
-	}
-	else if(k == 's'){
-		islandZ -= islandDelta;
-	}
-	printf("angle: %f z: %f\n", angle, islandZ);
-
 
 }
 
 void freeStuffs(){
 	free(setPoints);
-//	free(waterVertices);
-//	free(waterColors);
 	free(voronoiPoints);
 	free(voronoiColors);
 	free(voronoiVertices);
 	free(voronoiCoords);
+	free(voronoiNormals);
 	free(perlinArray);
 }
 
@@ -623,22 +549,22 @@ void special(int key, int x, int y)
 {
         if(key == GLUT_KEY_LEFT)
         {
-
+        	islandX += 0.5;
         }
 
         if(key == GLUT_KEY_RIGHT)
         {
-
+        	islandX -= 0.5;
         }
 
         if(key == GLUT_KEY_UP)
         {
-
+        	islandZ += 0.5;
         }
 
         if(key == GLUT_KEY_DOWN)
         {
-
+        	islandZ -= 0.5;
         }
 }
 
@@ -648,7 +574,7 @@ int main(int argc, char ** argv){
 	/* Initialize the GLUT window */
 	glutInit(&argc, argv);
 	//	glutInitWindowSize(IslandWidth, IslandHeight);
-       	glutInitWindowSize(800, 600);
+       	glutInitWindowSize(IslandWidth, IslandHeight);
 	glutInitWindowPosition(500, 500);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutCreateWindow("Points");
