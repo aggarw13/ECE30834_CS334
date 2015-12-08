@@ -1,6 +1,7 @@
 #pragma once
 #include<iostream>
 #include"common_types.h"
+#include "GL/glew.h"
 #include "GL/glut.h"
 #include "glm/mat4x4.hpp"
 #include "part_model.h"
@@ -14,55 +15,28 @@ using namespace std;
 class tree_renderer
 {
 	private:
-		/* static struct pos */
-		/* { */
-		/* 	float x; */
-		/* 	float y; */
-		/* 	float z; */
-		/* }; */
-		
-		list<pos> vertices_list;
-		float vertices[1000];
-		float colors[1000];
+        
 		vector<part_model *> parts_list;
 		tree_generator * generator;
 		int treeVertexCount;
 		float pitch, yaw, translate_x, translate_y, translate_z;
+		float prevz_pos;
 		short simCounter;
 		
-		/************Shader Rendering Parameters****************/
-		///* The transformation matrices */
-		//GLuint * verticesVbo;
-		//GLuint * colorVbo;
-		//GLuint * modelVao;
 
-		//glm::mat4 modelMatrix;
-		//glm::mat4 viewMatrix;
-		//glm::mat4 projMatrix;
 
-		//GLuint vertexShader = 0;
-		//GLuint fragmentShader = 0;
-		//GLuint shaderProgram = 0;
-
-		///* The location of the transformation matrices */
-		//GLint modelMatrixLocation;
-		//GLint viewMatrixLocation;
-		//GLint projMatrixLocation;
-		
-		
 		void clearPartsList();
 		void generateArrays();
 		tuple3d calculateAngles(vec3);
 
 	public:	
 		int simThresh, iterations;
-		bool firstRender;
 		tree_renderer(tree_generator *);
 		~tree_renderer();
 		void init();
 		void idle();
 		void display();
-		void addVertex(float x, float y);
+		void generateShaderInfo(float *, float *, int *);
 		void addModel(part_model * part);
 		void keyboard(unsigned char k, int x, int y);
 		void special(int key, int x, int y);

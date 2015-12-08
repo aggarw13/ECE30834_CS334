@@ -1,7 +1,7 @@
 TARGET = TreeGen
 TARGETFAST = TreeGenFAST
 LIBS = -lGLU -lGL -lglut -lGLEW -lCGAL -lgmp -lmpfr
-FLAGS = -g -std=c++11
+FLAGS = -g -O0 -std=c++11
 #-O0 
 FFAST= -O3 -std=c++11
 CC = g++
@@ -38,10 +38,10 @@ HEADERS = $(wildcard *.h *.tcc)
 .PRECIOUS: $(TARGET) $(TARGETFAST) $(OBJECTS)
 
 $(TARGETFAST): $(OBJECTS)
-	$(CC) $(FFAST) -c $(OBJECTS) -Wall $(LIBS) -o $@
+	$(CC) $(FFAST) -c $(OBJECTS) $(LIBS) -o $@
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(FLAGS) $(OBJECTS) -Wall $(LIBS) -o $@
+	$(CC) $(FLAGS) $(OBJECTS) $(LIBS) -o $@
 
 clean:
 	-rm -f *.o

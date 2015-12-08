@@ -14,7 +14,7 @@ tree_generator::tree_generator(grammar_parser * parser)
 {
 	this->parser = parser;
 	//rule_trees = new map<string, TreeNode *>();
-	this->currentTree = this->parser->start_symb;
+	//this->currentTree = this->parser->start_symb;
 	this->posStack = new stack<std::pair<char,pos_orient>>();
 	//this->renderer = renderer;
 	frameCount = 0;
@@ -64,7 +64,7 @@ vec3 tree_generator::generateRotation(TURTLE_AXIS axis,  vec3 currdir_pos, short
 	//return rot;
 	switch(axis)
 	{
-		case L : return glm::mat3(1, 0, 0, 0 , cos(parser->angle * sign * PI / 180), sin(parser->angle * -sign * PI / 180) , 0, -sin(parser->angle * sign * PI / 180), cos(parser->angle * -sign * PI / 180)) *  currdir_pos/*tuple3d(currdir_pos.x, curr_dir.y, -curr_dir.z).getVector()*/;
+		case L : return glm::mat3(1, 0, 0, 0 , cos(parser->angle * sign * PI / 180), sin(parser->angle * sign * PI / 180) , 0, -sin(parser->angle * sign * PI / 180), cos(parser->angle * sign * PI / 180)) *  currdir_pos/*tuple3d(currdir_pos.x, curr_dir.y, -curr_dir.z).getVector()*/;
 				break;
 		case H : return glm::mat3(cos(parser->angle * sign * PI / 180), 0, sin(parser->angle * sign * PI / 180), 0, 0, 0, -sin(parser->angle * sign * PI / 180), 0, cos(parser->angle * sign * PI / 180)) * currdir_pos;
 				break;
@@ -94,13 +94,18 @@ bool tree_generator::traverseGeneratedTree()
 	*/
 	/*Stacks keeping track of branch Level Heights and widths*/
 
-	currbranch_l = parser->model_data->find(std::string("branch_h"))->second;
+	/*currbranch_l = parser->model_data->find(std::string("branch_h"))->second;
 	leaf_l = parser->model_data->find(std::string("leaf_h"))->second;
 	currbranch_w = parser->model_data->find(std::string("branch_w"))->second;
 	leaf_w = parser->model_data->find(std::string("leaf_w"))->second;
 	contract_l = parser->model_data->find(std::string("contraction_ratio"))->second;
 	contract_w = parser->model_data->find(std::string("diameter_ratio"))->second; 
-	float curr_len;
+	*/float curr_len;
+
+	currbranch_l = 3;
+	leaf_l = 3;
+
+
 	//printf("Diamater ratio : %f Contraction Ratio : %f\n", contract_w, contract_l);
 	bool collides;
 	PART_TYPE part;
@@ -112,7 +117,7 @@ bool tree_generator::traverseGeneratedTree()
 	vertex = this->posStack->top().second.first;
 	for (std::string::size_type index = 0; index < this->currentTree.size(); index++)
 	{
-		//printf("Current String character : %c Direction : (%f,%f,%f) Unit dir : (%f, %f, %f)\n", this->currentTree[index], curr_dir.x,curr_dir.y,curr_dir.z, dir_pos.x, dir_pos.y, dir_pos.z);
+		//printf("Current String character : %c Direction : (%f,%f,%f)\n", this->currentTree[index], curr_dir.x,curr_dir.y,curr_dir.z);
 		switch (this->currentTree[index])
 		{
 		case '+': curr_dir = this->generateRotation(U, curr_dir, 1); break;
@@ -142,7 +147,6 @@ bool tree_generator::traverseGeneratedTree()
 			part = (this->currentTree[index] == 'F') ? PART_TYPE::BRANCH : PART_TYPE::LEAF;
 			if (collides = this->checkCollision(vertex.getVector(), (tuple3d(curr_dir) * curr_len).getVector() , part))
 			{
-				register;
 				//printf("Enters line registeration \n");
 				this->tree_vectors.push_back(vec_lines(vertex.getVector(), curr_dir, part));
 				if (this->currentTree[index] == 'F')

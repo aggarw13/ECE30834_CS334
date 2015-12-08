@@ -26,7 +26,6 @@ private:
 	grammar_parser * parser;
 	tree_renderer * renderer;
 	std::map<string, TreeNode *> rule_trees;
-	std::string currentTree;
 	tuple3d curr_basePoint, base_dir, vertex;
 	vec3 curr_dir;
 	stack<std::pair<char, pos_orient>> * posStack;
@@ -46,6 +45,7 @@ private:
 	
 public:
 	float contract_l, contract_w;
+	std::string currentTree;
 	tree_generator(grammar_parser *);
 	void setRenderer(tree_renderer *);
 	void setTreeBaseLocation(tuple3d);

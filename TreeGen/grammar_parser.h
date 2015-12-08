@@ -34,8 +34,10 @@
 
 	Example 4 (3-D tree with inter-plane angle) : F -> GG[-GF][+F]
 		
-	Bush Like Structure with lower branch height - : F[&+-L][^+&L]F[+L][-L][^F]L
-*/
+	Bush Like Structure with lower branch height : F -> F[&+-L][^+&L]F[+L][-L][^F]L
+
+													L -> F[+FL][-L]F[+L][-FL]F
+	*/
 #ifndef GRAMMAR_PARSER
 #define GRAMMAR_PARSER
 
